@@ -1,3 +1,4 @@
+//https://blog.malwarebytes.com/threat-analysis/2017/05/the-worm-that-spreads-wanacrypt0r/
 //skeleton code at this moment
 //still a work in progress
 
