@@ -9,8 +9,8 @@ int canConnectToPort445(char *ip)
 	fd_set writefds;
 	SOCKET control_sock;
 	u_long argp;
+	int result;
 	
-	FD_ZERO(&read_fds);
      	FD_ZERO(&writefds);    
 
 	name.sin_family = AF_INET;
