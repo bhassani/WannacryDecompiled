@@ -31,11 +31,11 @@ int ExtractAndCreate()
     hSrc = FindResourceA(hModule, 101, "W");
     hResourceData = LoadResource(hModule, hSrc);
     pRsrc = LockResource(hResourceData);
-    ResourceSize = SizeOfResource(hModule, Hsrc);
+    ResourceSize = SizeOfResource(hModule, hSrc);
     
     //dwFlagsAndTrributes = 4
     //find out whatever 0x40000000 is
-    HANDLE hFile = CreateFileA(szDest, 0x40000000, 2,0,2,4,0);
+    HANDLE hFile = CreateFileA(szDest, 0x40000000, 2, 0, 2, 4, 0);
     if(!hFile)
     {
          WriteFile(hFile, pRsrc, ResourceSize, NumberOfBytestoWrite, NULL);
