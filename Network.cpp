@@ -41,6 +41,7 @@ int initialize_payload()
 	
 	if(something_happens_here)
 	{
+		//GENERIC_READ is 0x80000000 and GENERIC_WRITE is 0x40000000
 		HANDLE fileHandle = CreateFileA(Filename, 0x80000000, 1, NULL, 3, 4, NULL);
 		if(fileHandle != INVALID_FILE_HANDLE)
 		{
