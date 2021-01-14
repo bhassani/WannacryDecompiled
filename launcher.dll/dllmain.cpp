@@ -35,10 +35,12 @@ int ExtractAndCreate()
     
     //dwFlagsAndTrributes = 4
     //find out whatever 0x40000000 is
+    //UPDATE: GENERIC_WRITE is 0x40000000
     HANDLE hFile = CreateFileA(szDest, 0x40000000, 2, 0, 2, 4, 0);
     if(!hFile)
     {
-         WriteFile(hFile, pRsrc, ResourceSize, NumberOfBytestoWrite, NULL);
+        //+4 to skip the DWORD length that's written before the actual resource
+         WriteFile(hFile, pRsrc + 4, ResourceSize, NumberOfBytestoWrite, NULL);
          CloseHandle(hFile);
     }
 }
