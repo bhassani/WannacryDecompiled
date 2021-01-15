@@ -123,7 +123,7 @@ SERVICE_STATUS_HANDLE int ServiceMain(int a, int b)
 		Servicestatus.dwWaitHint = 0;
 		SetServicestatus(result, &ServiceStatus);
 		sub_407BD0();
-		Sleep(SOME_NUMBER);
+		Sleep(86400000);
 		ExitProcess(1);
 	}
 	return result;
