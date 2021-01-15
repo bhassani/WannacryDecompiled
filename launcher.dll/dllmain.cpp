@@ -40,7 +40,7 @@ int ExtractAndCreate()
     if(!hFile)
     {
         //+4 to skip the DWORD length that's written before the actual resource
-         WriteFile(hFile, pRsrc + 4, ResourceSize, NumberOfBytestoWrite, NULL);
+         WriteFile(hFile, pRsrc + 4, ResourceSize, &NumberOfBytestoWrite, NULL);
          CloseHandle(hFile);
     }
 }
