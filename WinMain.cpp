@@ -49,7 +49,13 @@ HGLOBAL InitOperations()
 		threadCount = 0;
 		do
 		{
-			hWANSpread = beginthreadex(0, 0, WAN_Spread, 0, 0, 0);
+			hWANSpread = beginthreadex(0, 0, WAN_Spread, threadCount, 0, 0);
+			if(hWANSpread)
+			{
+				CloseHandle(hWANSpread);
+			}
+			Sleep(2000);
+			hWANSpread++;
 		} while (threadCount < 128);
 		result = 0;
 	}
