@@ -36,11 +36,11 @@ HGLOBAL initialize_payload()
 	DWORD NumberOfBytesRead;
 	DWORD fileSize;
 	//size = 0x4060
-	HGLOBAL hMemory_x86 = GlobalAlloc(GMEM_ZEROINIT, 5298176);
+	HGLOBAL hMemory_x86 = GlobalAlloc(GMEM_ZEROINIT, 5298176); //0x50D000
 	//converted to decimal: 16480
 	
 	//size = 0xc8a4
-	HGLOBAL hMemory_x64 = GlobalAlloc(GMEM_ZEROINIT, 5298176);
+	HGLOBAL hMemory_x64 = GlobalAlloc(GMEM_ZEROINIT, 5298176); //0x50D000
 	//converted to decimal: 51364
 	
 	if(something_happens_here)
