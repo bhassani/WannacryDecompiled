@@ -29,15 +29,18 @@ int AdapterInfo()
 	GetAdaptersInfo();
 }
 
+//not finished
 int LAN_Spread()
 {
 	LOBYTE();
 	AdapterInfo();
 }
 
+//not finished
 HGLOBAL InitCryptoContext()
 {
-
+	CryptAcquireContextA(Unknown, NULL, UNK, UNK, &0xf0000000);
+	InitializeCriticalSection(LPCRITICAL_SECTION, &UNKNOWN);
 }
 
 HGLOBAL initializeSockets()
