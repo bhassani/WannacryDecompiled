@@ -25,7 +25,6 @@ int xor_payload(int xor_key, int buf, int size)
 }
 
 //EXE file global here
-HGLOBAL EXE_BUFFER;
 HGLOBAL hDLL_x86;
 HGLOBAL hDLL_x64;
 
@@ -55,7 +54,6 @@ HGLOBAL initialize_payload()
 		if(fileHandle != INVALID_FILE_HANDLE)
 		{
 			fileSize = GetFileSize(fileHandle, NULL);
-			EXE_BUFFER = GlobalAlloc(GMEM_ZEROINIT, fileSize); 
 			ReadFile(fileHandle, EXE_BUFFER, &fileSize, &NumberOfBytesRead, 0);
     			CloseHandle(fileHandle);
 		}
