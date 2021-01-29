@@ -206,7 +206,7 @@ int RealMain()
   char szName[] = "MSSecSvc";
   GetModuleFileName(NULL, &executable_path, sizeof(executable_path));
   
-  argc = (int*)__argc();
+  argc = (int*)__p__argc();
   if(*argc < 2)
   {
      no_argument_handler();
