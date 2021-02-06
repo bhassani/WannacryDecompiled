@@ -84,9 +84,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+        //for testing purposes; remove in final version
         MessageBoxA(NULL, "DLL_PROCESS_ATTACH", "DLL_PROCESS_ATTACH", MB_OK);
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
+        //for testing purposes; remove in final version
         MessageBoxA(NULL, "DLL_PROCESS_DETACH", "DLL_PROCESS_DETACH", MB_OK);
     case DLL_PROCESS_DETACH:
         break;
