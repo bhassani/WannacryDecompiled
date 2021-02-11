@@ -31,6 +31,7 @@ HGLOBAL hDLL_x64;
 //init the DLL payload here
 //read from Wannacry in IDA
 //also here: https://www.acronis.com/en-us/blog/posts/wannacry-attack-what-it-and-how-protect-your-computer
+//Memory alloc functions: https://www.tenouk.com/visualcplusmfc/visualcplusmfc20.html
 HGLOBAL initialize_payload()
 {
 	/*
