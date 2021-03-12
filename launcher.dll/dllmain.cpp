@@ -69,7 +69,7 @@ int RunProcess()
     StartupInfo.dwFlags = 129;
     */
     ZeroMemory(&StartupInfo, sizeof(StartupInfo));
-    StartupInfo.cb = sizeof(STARTUPINFOA);
+    StartupInfo.cb = sizeof(StartupInfo);
     //ZeroMemory(&StartupInfo, sizeof(StartupInfo));
    // StartupInfo.cb = sizeof(StartupInfo);
     //ZeroMemory(&ProcessInformation, sizeof(ProcessInformation));
