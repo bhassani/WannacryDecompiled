@@ -498,10 +498,15 @@ int scanIP(DWORD LPPARAM)
 			}
 		}
 	}
+	endthreadex(0);
+  	return 0;
 }
 
 int threadMain()
 {
+	//GetTargets(Char1, Char2);
+	
+	HANDLE ScanIPMain;
 	//create 100 threads
-	(HANDLE)_beginthreadex(0, 0, scanIP, v1[i], 0, 0);
+	ScanIPMain = (HANDLE)_beginthreadex(0, 0, scanIP, v1[i], 0, 0);
 }
