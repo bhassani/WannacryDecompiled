@@ -57,13 +57,19 @@ int RunProcess()
 {
     PROCESS_INFORMATION ProcessInformation;
     STARTUPINFOA StartupInfo;
+    /*
     ProcessInformation.hProcess = 0;
     ProcessInformation.hThread = 0;
     ProcessInformation.dwProcessId = 0;
-    memset(&StartupInfo.lpReserved, 0, sizeof(StartupInfo));
+    */
+    //memset(&StartupInfo.lpReserved, 0, sizeof(StartupInfo));
+    /*
     StartupInfo.cb = 104;
     StartupInfo.wShowWindow = 0;
     StartupInfo.dwFlags = 129;
+    */
+    ZeroMemory(&StartupInfo, sizeof(StartupInfo));
+    StartupInfo.cb = sizeof(STARTUPINFOA);
     //ZeroMemory(&StartupInfo, sizeof(StartupInfo));
    // StartupInfo.cb = sizeof(StartupInfo);
     //ZeroMemory(&ProcessInformation, sizeof(ProcessInformation));
