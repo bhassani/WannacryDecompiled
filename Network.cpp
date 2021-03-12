@@ -137,7 +137,7 @@ unsigned char trans2_session_setup[] =
 "\x00\x0E\x00\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 "\x00\x00"
 
-int IsDOUBLEPULSAR_Present(char *host, int flagUninstall, u_short hostshort)
+int IsDOUBLEPULSARInstalled(char *host, int flagUninstall, u_short hostshort)
 {
 	SOCKET dsock;
 	struct sockaddr name;
@@ -440,7 +440,7 @@ int runPayloadOnTarget(char *host, u_short hostshort)
 	unsigned char signature[4];
 	if (recvbuff[34] == 0x51)
 	{
-		ArchitectureType = recvbuff[22];
+		ArchitectureType = int(recvbuff[22]);
 		
 		signature[0] = recvbuff[18];
 		signature[1] = recvbuff[19];
