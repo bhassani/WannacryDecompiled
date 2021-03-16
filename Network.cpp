@@ -502,6 +502,13 @@ int scanIP(DWORD LPPARAM)
   	return 0;
 }
 
+/*
+Threading: https://www.bogotobogo.com/cplusplus/multithreaded2A.php
+http://simplesamples.info/windows/_beginthreadex.aspx
+https://jeffpar.github.io/kbarchive/kb/132/Q132078/
+https://www.programmersought.com/article/57053139965/
+https://sodocumentation.net/winapi/topic/1756/process-and-thread-management
+*/
 int threadMain()
 {
 	//GetTargets(Char1, Char2);
