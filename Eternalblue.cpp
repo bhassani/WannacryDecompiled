@@ -36,6 +36,86 @@ unsigned char transNamedPipeRequest[] =
 "\x00\x00\x00\x00\x00\x00\x4a\x00\x00\x00\x4a\x00\x02\x00\x23\x00\x00"
 "\x00\x07\x00\x5c\x50\x49\x50\x45\x5c\x00";
 
+void replacePlaceholderWithBytes(unsigned char* buffer, size_t bufferSize, const char* placeholder, unsigned char *newValue) {
+    size_t placeholderLength = strlen(placeholder);
+    size_t offset = 0;
+
+    // Iterate through the buffer to find and replace the placeholder
+    while (offset < bufferSize) {
+        // Find the position of the placeholder in the remaining buffer
+        void* position = memchr(buffer + offset, placeholder[0], bufferSize - offset);
+
+        // If the placeholder is found, replace it with the new value
+        if (position != NULL) {
+            // Calculate the position relative to the entire buffer
+            size_t absolutePosition = (unsigned char*)position - buffer;
+
+            // Check if the remaining buffer is long enough to contain the placeholder
+            if (absolutePosition + placeholderLength <= bufferSize) {
+                // Allocate memory for the new string
+                char* newString = (char*)malloc(bufferSize - placeholderLength + sizeof(unsigned char)*2 );
+
+                // Copy the content before the placeholder
+                memcpy(newString, buffer, absolutePosition);
+
+                // Copy the two bytes of the new value as characters
+                memcpy(newString + absolutePosition, (unsigned char*)newValue, sizeof(unsigned char)*2);
+
+                // Copy the content after the placeholder
+                memcpy(newString + absolutePosition + sizeof(unsigned char)*2, buffer + absolutePosition + placeholderLength,
+                    bufferSize - absolutePosition - placeholderLength);
+
+                // Update the original buffer with the new string
+                memcpy(buffer, newString, bufferSize - placeholderLength + sizeof(WORD));
+
+                // Free the allocated memory
+                free(newString);
+
+                // Move the offset to the end of the replaced portion
+                offset = absolutePosition + sizeof(unsigned char)*2;
+            }
+            else {
+                // If the remaining buffer is not long enough, exit the loop
+                break;
+            }
+        }
+        else {
+            // If the placeholder is not found, exit the loop
+            break;
+        }
+    }
+}
+
+//Usage: replace_SMB_values(SMB_Trans2_Packet, "__TREEID__PLACEHOLDER__", treeid);
+//replace_SMB_values(SMB_Trans2_Packet, "__USERID__PLACEHOLDER__", userid);
+int replace_SMB_values(unsigned char *smb_packet, const char placeholder, replacevalue)
+{
+    // Example SMB string to replace
+	/*
+    unsigned char smb_packet[] = "\x00\x00\x10\x4e\xff\x53\x4d\x42\x32\x00\x00\x00\x00\x18\x07\xc0"
+        "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x5F\x5F\x54\x52\x45\x45\x49\x44\x5F\x50\x4C\x41\x43\x45\x48\x4F\x4C\x44\x45\x52\x5F\x5F\xff\xfe"
+        "\x00\x08\x42\x00\x0f\x0c\x00\x00\x10\x01\x00\x00\x00\x00\x00\x00"
+        "\x00\x25\x89\x1a\x00\x00\x00\x0c\x00\x42\x00\x00\x10\x4e\x00\x01"
+        "\x00\x0e\x00\x0d\x10\x00"; *./
+    size_t bufferSize = sizeof(smb_packet) - 1; // Exclude the null terminator
+
+    /*
+     __USERID__PLACEHOLDER__
+     __TREEID__PLACEHOLDER__
+     __TREEPATH_REPLACE__
+    */
+    //const char placeholder[] = "__TREEID_PLACEHOLDER__";
+    //unsigned char treeid[] = "\xA6\xFF";
+	
+    //unsigned char treeid[2];
+    //treeid[0] = 0xA6;
+    //treeid[1] = 0xF8;
+
+    // Call the function to replace the placeholder with the new value
+    replacePlaceholderWithBytes(smb_packet, bufferSize, placeholder, replacevalue);
+    return 0;
+}
+
 int CheckForEternalBlue(char *host, int port)
 {
     struct sockaddr_in server;
