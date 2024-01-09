@@ -88,7 +88,7 @@ void replacePlaceholderWithBytes(unsigned char* buffer, size_t bufferSize, const
 
 //Usage: replace_SMB_values(SMB_Trans2_Packet, "__TREEID__PLACEHOLDER__", treeid);
 //replace_SMB_values(SMB_Trans2_Packet, "__USERID__PLACEHOLDER__", userid);
-int replace_SMB_values(unsigned char *smb_packet, const char placeholder, replacevalue)
+int replace_SMB_values(unsigned char *smb_packet, const char placeholder, unsigned char *replacevalue)
 {
     // Example SMB string to replace
 	/*
