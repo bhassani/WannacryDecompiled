@@ -107,9 +107,10 @@ int __stdcall LANThreadFunc(void *param)
 
 int __stdcall WANThreadFunc(void *param)
 {
+	srand(GetTickCount());
 	//Generate IP address
-
-	char generated_ip;
+	char *generated_ip[16];
+	sprintf(generated_ip, "%d.%d.%d.%d", rand() % 254, rand() % 254, rand() % 254, rand() % 254 );
 	
 	HANDLE ScanIPHandle;
 	ScanIPHandle = (HANDLE)_beginthreadex(0, 0, scanIP, generated_ip, 0, 0);
