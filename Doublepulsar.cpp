@@ -1,3 +1,13 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+#include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <winsock.h>
+#include "Doublepulsar_launcher_dll.h"
+#pragma comment(lib, "ws2_32.lib")
+
 //To determine if DoublePulsar is present
 unsigned char SmbNegociate[] =
 "\x00\x00\x00\x2f\xff\x53\x4d\x42\x72\x00"
