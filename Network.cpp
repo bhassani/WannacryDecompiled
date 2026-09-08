@@ -1,6 +1,4 @@
 //https://blog.malwarebytes.com/threat-analysis/2017/05/the-worm-that-spreads-wanacrypt0r/
-//skeleton code at this moment
-//still a work in progress
 
 //https://stackoverflow.com/questions/37838490/how-to-properly-set-a-flag-in-the-write-fds-and-select-in-c
 int canConnectToPort445(char *ip)
